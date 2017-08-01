@@ -1,7 +1,7 @@
 //*************************************************************
 //  File: Generator.cpp
 //  Date created: 1/28/2017
-//  Date edited: 3/10/2017
+//  Date edited: 3/1/2017
 //  Author: Nathan Martindale
 //  Copyright © 2017 Digital Warrior Labs
 //  Description: 
@@ -201,6 +201,11 @@ int HandleCommand(string sCommand)
 	{
 		cout << "Have a nice day!" << endl;
 		return 2;
+	}
+	else if (vParts[0] == "help")
+	{
+		cout << "exit\necho [MESSAGE]\ncollection [INDEX|save|load]\nrun [SCRIPT]\ncreate [WIDTH] [HEIGHT]\nzoom [X] [Y]\ncolor [blue|green|ttu|purple|purpleblue|orange|yellow|red|portal]\ninit\nsolve [COUNT]\nrender [GAMMA] [BRIGHTNESS]\ngenerate\nsave [image|functions|trace|collection] {FILE}\nload [functions|trace] [FILE]" << endl;
+		return 0;
 	}
 	else if (vParts[0] == "run")
 	{

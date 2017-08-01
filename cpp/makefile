@@ -1,24 +1,26 @@
 # compiler 
-CC=gcc
+CC=g++
 
 # output name
 TARGET=FlameFractalEngine
 
 # directories
-BINDIR=.
+BINDIR=bin
 OBJDIR=obj
 SRCDIR=src
 LIBDIR=lib
 
-INC=-I$(LIB_DIR)/cpp -I./
+INC=-I$(LIB_DIR)/cpp -I$(LIBDIR)
 
 SOURCES := $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(LIBDIR)/*.cpp)
-OBJECTS := $(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$(SOURCES:.cpp=.o)) $(patsubst $(LIBDIR)/%,$(OBJDIR)/%,$(SOURCES:.cpp=.o)) 
+OBJECTS := $(patsubst %.cpp,$(OBJDIR)/%.o,$(notdir $(SOURCES)))
 
 all: $(TARGET)
+	@echo "Linking complete"
 	
 run: all
-	$(BINDIR)/$(TARGET)
+	@echo -e "\n$(C_GREEN_L)Running...$(C_RESET)\n----------------------------------------"
+	@$(BINDIR)/$(TARGET)
 
 re: clean all
 
@@ -26,16 +28,24 @@ rerun: clean run
 
 # link
 $(TARGET): $(OBJECTS)
-	echo $(SOURCES)
-	echo $(OBJECTS)
-	$(CC) -o $(BINDIR)/$(TARGET) $^
+	@echo "Compiling complete"
+	@echo -e "$(C_MAGENTA)Linking into '$(C_MAGENTA_L)$(TARGET)$(C_MAGENTA)'...$(C_RESET)"
+	@$(CC) -o $(BINDIR)/$(TARGET) $^
 
 # compile
-$(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(LIBDIR)/%.cpp
-	$(CC) $(INC) -c -o $@ $<
+#$(OBJDIR)/%.o: $(SOURCES)
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp
+	@echo -e "$(C_YELLOW)Compiling '$(C_YELLOW_L)$<$(C_YELLOW)'...$(C_RESET)"
+	@$(CC) $(INC) -c -o $@ $<
+	
+$(OBJDIR)/%.o: $(LIBDIR)/%.cpp
+	@echo -e "$(C_YELLOW)Compiling '$(C_YELLOW_L)$<$(C_YELLOW)'...$(C_RESET)"
+	@$(CC) $(INC) -c -o $@ $<
 
 clean:
-	-rm $(OBJDIR)/*.o
-	-rm $(BINDIR)/$(TARGET)
+	@echo -e "Cleaning..."
+	@-rm $(OBJDIR)/*.o
+	@-rm $(BINDIR)/$(TARGET)
+	@echo -e "Cleaning complete"
 
 .PHONY: clean all run re rerun

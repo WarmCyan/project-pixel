@@ -1,7 +1,7 @@
 //*************************************************************
 //  File: FlameFractal.h
 //  Date created: 1/28/2017
-//  Date edited: 3/3/2017
+//  Date edited: 8/1/2017
 //  Author: Nathan Martindale
 //  Copyright © 2017 Digital Warrior Labs
 //  Description: 
@@ -19,9 +19,11 @@
 #include <sstream>
 
 #include "Function.h"
-#include "ProgressBar.h"
+//#include "ProgressBar.h"
+#include <ProgressBar.h>
 
-#include "lib/pugixml.hpp"
+//#include "lib/pugixml.hpp"
+#include <pugixml.hpp>
 
 #define PI 3.14159265
 

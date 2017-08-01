@@ -4,3 +4,4 @@
 *.dat
 *.json
 *.o
+cpp/bin/*

@@ -1,7 +1,7 @@
 //*************************************************************
 //  File: Function.h
 //  Date created: 1/28/2017
-//  Date edited: 2/19/2017
+//  Date edited: 8/1/2017
 //  Author: Nathan Martindale
 //  Copyright © 2017 Digital Warrior Labs
 //  Description: 
@@ -15,7 +15,8 @@
 #include <vector>
 #include <cmath>
 
-#include "lib/pugixml.hpp"
+//#include "lib/pugixml.hpp"
+#include <pugixml.hpp>
 
 #define PI 3.14159265
 
