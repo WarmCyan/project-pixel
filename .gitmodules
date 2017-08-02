@@ -1,3 +1,6 @@
 [submodule "cpp/collection"]
 	path = cpp/collection
 	url = https://WildfireXIII@bitbucket.org/WildfireXIII/fractal-collection.git
+[submodule "cpp/scripts"]
+	path = cpp/scripts
+	url = git@bitbucket.org:WildfireXIII/fractal-scripts.git
