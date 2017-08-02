@@ -1,7 +1,7 @@
 //*************************************************************
 //  File: Generator.cpp
 //  Date created: 1/28/2017
-//  Date edited: 3/1/2017
+//  Date edited: 8/2/2017
 //  Author: Nathan Martindale
 //  Copyright © 2017 Digital Warrior Labs
 //  Description: 
@@ -17,6 +17,9 @@
 #include <fstream>
 #include <sstream>
 
+#include <chrono>
+#include <thread>
+
 #include "FlameFractal.h"
 #include "FunctionGenerator.h"
 
@@ -25,6 +28,7 @@ using namespace dwl;
 
 void REPL();
 int HandleCommand(string sCommand);
+string GetRollingCommand();
 
 void StoreCollectionNum();
 void LoadCollectionNum();
@@ -33,10 +37,13 @@ FlameFractal* pFractal = new FlameFractal(0,0);
 int iCollection = 0;
 string sErrorMsg = "";
 
+bool bRollingMode = false;
+bool bPaused = false;
+
 int main()
 {
 	LoadCollectionNum();
-	cout << "Collection: " << iCollection << endl;
+	cout << ">> Collection: " << iCollection << endl;
 
 	REPL();
 	return 0;
@@ -153,7 +160,7 @@ int main()
 
 void StoreCollectionNum()
 {
-	cout << "Storing collection num..." << endl;
+	cout << ">> Storing collection num..." << endl;
 	ofstream fFile;
 	fFile.open("./collection/collection", ios::out);
 	fFile << iCollection;
@@ -162,11 +169,40 @@ void StoreCollectionNum()
 
 void LoadCollectionNum()
 {
-	cout << "Loading collection num..." << endl;
+	cout << ">> Loading collection num..." << endl;
 	ifstream fFile;
 	fFile.open("./collection/collection");
 	fFile >> iCollection;
 	fFile.close();
+}
+
+// NOTE: pause works by sending "PAUSE" to handle command the NEXT time (hence the && !bPaused)
+string GetRollingCommand()
+{
+	//if (!bPaused) { cout << ">> Checking for next rolling command" << endl; }
+
+	ifstream fFile;
+	fFile.open("./scripts/_rolling");
+	string sNextRollingCommand = "";
+	getline(fFile, sNextRollingCommand);
+	vector<string> vCommands = vector<string>();
+	string sLine = "";
+	while (getline(fFile, sLine)) { vCommands.push_back(sLine); }
+	fFile.close();
+	
+	string sOutput = "";
+	for (int i = 0; i < vCommands.size(); i++) { sOutput += vCommands[i] + "\n"; }
+	if (vCommands.size() == 0 && !bPaused) { bPaused = true; }
+	else if (vCommands.size() == 0 && bPaused && sNextRollingCommand == "") { return "PAUSE"; }
+	else if (vCommands.size() == 0 && bPaused && sNextRollingCommand != "") { bPaused = true; }
+	else { bPaused = false; }
+	ofstream pFile;
+	pFile.open("./scripts/_rolling", ios::out);
+	pFile << sOutput;
+	pFile.close();
+	
+	//cout << sNextRollingCommand << endl;
+	return sNextRollingCommand;
 }
 
 void REPL()
@@ -174,19 +210,29 @@ void REPL()
 	int iResult = 0;
 	while (iResult != 2)
 	{
-		cout << "Pixel> ";
+		if (!bRollingMode) { cout << "Pixel> "; }
 		string sCommand = "";
 		//cin >> sCommand;
-		getline(cin, sCommand);
+		if (bRollingMode) { sCommand = GetRollingCommand(); }
+		else { getline(cin, sCommand); }
 		iResult = HandleCommand(sCommand);
-		if (iResult == 1) { cout << "ERROR: " << sErrorMsg << endl; }
+		if (iResult == 1) 
+		{ 
+			cout << "> ERROR: " << sErrorMsg << endl; 
+			if (bRollingMode) 
+			{ 
+				bRollingMode = false;
+				cout << ">> Exiting rolling command mode" << endl;
+			}
+		}
+		else if (iResult == 3) { this_thread::sleep_for(chrono::milliseconds(10000)); }
 	}
 }
 
-// 0 = normal, 1 = error, 2 = exit
+// 0 = normal, 1 = error, 2 = exit, 3 = pause
 int HandleCommand(string sCommand)
 {
-	cout << "" << sCommand << endl;
+	if (sCommand != "PAUSE") { cout << ">>> " << sCommand << endl; }
 
 	// split on space (black magic split)
 	stringstream ss(sCommand);
@@ -199,12 +245,19 @@ int HandleCommand(string sCommand)
 	
 	if (vParts[0] == "exit")
 	{
-		cout << "Have a nice day!" << endl;
+		if (vParts.size() == 2 && vParts[1] == "rolling")
+		{
+			cout << ">> Exiting rolling script mode" << endl;
+			bRollingMode = false;
+			return 0;
+		}
+		cout << ">> Have a nice day!" << endl;
 		return 2;
 	}
+	else if (vParts[0] == "PAUSE") { bPaused = true; return 3; }
 	else if (vParts[0] == "help")
 	{
-		cout << "exit\necho [MESSAGE]\ncollection [INDEX|save|load]\nrun [SCRIPT]\ncreate [WIDTH] [HEIGHT]\nzoom [X] [Y]\ncolor [blue|green|ttu|purple|purpleblue|orange|yellow|red|portal]\ninit\nsolve [COUNT]\nrender [GAMMA] [BRIGHTNESS]\ngenerate\nsave [image|functions|trace|collection] {FILE}\nload [functions|trace] [FILE]" << endl;
+		cout << "exit {rolling}\necho [MESSAGE]\ncollection [INDEX|increment]\nrun [SCRIPT|rolling]\ncreate [WIDTH] [HEIGHT]\nzoom [X] [Y]\ncolor [blue|green|ttu|purple|purpleblue|orange|yellow|red|portal]\ninit\nsolve [COUNT]\nrender [GAMMA] [BRIGHTNESS]\ngenerate\nsave [image|functions|trace|collection] {FILE}\nload [functions|trace] [FILE]" << endl;
 		return 0;
 	}
 	else if (vParts[0] == "run")
@@ -215,10 +268,21 @@ int HandleCommand(string sCommand)
 			return 1;
 		}
 
+		// check for starting rolling mode
+		if (vParts[1] == "rolling")
+		{
+			cout << ">> Rolling script mode started! Add commands to scripts/_rolling (and add 'exit rolling' inside the file to return to normal REPL mode)" << endl;
+			bRollingMode = true;
+			return 0;
+		}
+
+		// add the scripts subdir automatically (should never have scripts outside of that)
+		vParts[1] = "scripts/" + vParts[1];
+
 		ifstream pFile;
 		pFile.open(vParts[1].c_str());
 
-		cout << "Running '" << vParts[1] << "'..." << endl;
+		cout << ">> Running '" << vParts[1] << "'..." << endl;
 		while (!pFile.eof())
 		{
 			string sLine;
@@ -228,7 +292,7 @@ int HandleCommand(string sCommand)
 			int iResult = HandleCommand(sLine);
 			if (iResult == 1) { pFile.close(); return 1; }
 		}
-		cout << "'" << vParts[1] << "' finished executing" << endl;
+		cout << ">> '" << vParts[1] << "' finished executing" << endl;
 		
 		pFile.close();
 		return 0;
@@ -244,7 +308,7 @@ int HandleCommand(string sCommand)
 		//float fHeight = (float)vParts[2];
 		int iWidth = stoi(vParts[1]);
 		int iHeight = stoi(vParts[2]);
-		cout << "Parsed " << "[Width: " << iWidth << "] [Height: " << iHeight << "]" << endl;
+		cout << ">> Parsed " << "[Width: " << iWidth << "] [Height: " << iHeight << "]" << endl;
 		
 		delete pFractal;
 		pFractal = new FlameFractal(iWidth, iHeight);
@@ -264,7 +328,7 @@ int HandleCommand(string sCommand)
 		//float fHeight = (float)vParts[2];
 		float fX = stof(vParts[1]);
 		float fY = stof(vParts[2]);
-		cout << "Parsed " << "[X: " << fX << "] [Y: " << fY << "]" << endl;
+		cout << ">> Parsed " << "[X: " << fX << "] [Y: " << fY << "]" << endl;
 		
 		pFractal->SetZoom(fX, fY);
 		
@@ -275,18 +339,17 @@ int HandleCommand(string sCommand)
 	{
 		if (vParts.size() != 2)
 		{
-			sErrorMsg = "Bad arguments!\nFORMAT: collection [INDEX|save|load]";
+			sErrorMsg = "Bad arguments!\nFORMAT: collection [INDEX|increment]";
 			return 1;
 		}
 
-		if (vParts[1] == "save")
+		if (vParts[1] == "increment") { iCollection++; }
+		else
 		{
-			
+			int iIndex = stoi(vParts[1]);
+			cout << ">> Parsed " << "[Index: " << iIndex << "]" << endl;
+			iCollection = iIndex;
 		}
-
-		int iIndex = stoi(vParts[1]);
-		cout << "Parsed " << "[Index: " << iIndex << "]" << endl;
-		iCollection = iIndex;
 		return 0;
 	}
 
@@ -298,7 +361,7 @@ int HandleCommand(string sCommand)
 			return 1;
 		}
 
-		cout << "Parsed " << "[Color: " << vParts[1] << "]" << endl;
+		cout << ">> Parsed " << "[Color: " << vParts[1] << "]" << endl;
 
 		bool bFound = false;
 		if (vParts[1] == "blue")
@@ -358,7 +421,7 @@ int HandleCommand(string sCommand)
 
 	else if (vParts[0] == "generate")
 	{
-		cout << "Generating random functions..." << endl;
+		cout << ">> Generating random functions..." << endl;
 		FunctionGenerator pGen = FunctionGenerator();
 		FFFunction* pF0 = pGen.GenerateFunction();
 		pFractal->AddFunction(*pF0);
@@ -376,7 +439,7 @@ int HandleCommand(string sCommand)
 		pFSym2->SetWeight(pF0->GetWeight() + pF1->GetWeight() + pF2->GetWeight() + pF3->GetWeight());
 		pFractal->AddFunction(*pFSym2);
 
-		cout << "Generated!" << endl;
+		cout << ">> Generated!" << endl;
 		return 0;
 	}
 
@@ -419,7 +482,7 @@ int HandleCommand(string sCommand)
 		}
 
 		int iSamples = stoi(vParts[1]);
-		cout << "Parsed [Samples: " << iSamples << "]" << endl;
+		cout << ">> Parsed [Samples: " << iSamples << "]" << endl;
 		pFractal->Solve(iSamples);
 		return 0;
 	}
@@ -434,7 +497,7 @@ int HandleCommand(string sCommand)
 
 		float fGamma = stof(vParts[1]);
 		float fBrightness = stof(vParts[2]);
-		cout << "Parsed [Gamma: " << fGamma << "] [Brightness: " << fBrightness << "]" << endl;
+		cout << ">> Parsed [Gamma: " << fGamma << "] [Brightness: " << fBrightness << "]" << endl;
 		pFractal->Render(fGamma, fBrightness, 0);
 		return 0;
 	}
@@ -457,9 +520,10 @@ int HandleCommand(string sCommand)
 			if (vParts.size() == 2) { sFileName = "./collection/" + to_string(iCollection) + "_render.png"; }
 			else { sFileName = vParts[2]; }
 			
-			string sCopyCommand = "copy \"./render.png\" \"" + sFileName + "\"";
+			//string sCopyCommand = "copy \"./render.png\" \"" + sFileName + "\""; // NOTE: only for windows!!
+			string sCopyCommand = "cp \"./render.png\" \"" + sFileName + "\"";
 			
-			cout << "Copying to " << sFileName << "..." << endl;
+			cout << ">> Copying to " << sFileName << "..." << endl;
 
 			system(sCopyCommand.c_str());
 			return 0;

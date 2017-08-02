@@ -1,7 +1,7 @@
 //*************************************************************
 //  File: ProgressBar.h
 //  Date created: 2/9/2017
-//  Date edited: 7/15/2017
+//  Date edited: 7/27/2017
 //  Author: Nathan Martindale
 //  Copyright © 2017 Digital Warrior Labs
 //  Description: Class for displaying task progress on a single line
@@ -28,6 +28,7 @@ namespace dwl
 
 			int m_iSize;
 			int m_iTotal;
+			int m_iPrevTickCount;
 			
 			// █ = 219
 			// ■ = 254
