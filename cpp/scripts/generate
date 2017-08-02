@@ -1,9 +1,0 @@
-# assumes collection already set
-
-# create empty just to get rid of old functions
-create 0 0
-
-
-generate
-save functions
-run scripts/quick

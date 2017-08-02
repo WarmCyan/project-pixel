@@ -1,7 +1,0 @@
-create 1000 1000
-load functions ./test
-load trace ./test
-solve 1000000
-render 2.2 1.0
-save image ./test.png
-exit
