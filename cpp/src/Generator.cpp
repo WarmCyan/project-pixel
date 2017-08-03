@@ -489,16 +489,18 @@ int HandleCommand(string sCommand)
 
 	else if (vParts[0] == "render")
 	{
-		if (vParts.size() != 3)
+		if (vParts.size() != 3 && vParts.size() != 4)
 		{
-			sErrorMsg = "Bad arguments!\nFORMAT: render [GAMMA] [BRIGHTNESS]";
+			sErrorMsg = "Bad arguments!\nFORMAT: render [GAMMA] [BRIGHTNESS] {FILTERNUM}";
 			return 1;
 		}
 
 		float fGamma = stof(vParts[1]);
 		float fBrightness = stof(vParts[2]);
+		int iFilter = 0;
+		if (vParts.size() == 4) { iFilter = stoi(vParts[3]); }
 		cout << ">> Parsed [Gamma: " << fGamma << "] [Brightness: " << fBrightness << "]" << endl;
-		pFractal->Render(fGamma, fBrightness, 0);
+		pFractal->Render(fGamma, fBrightness, iFilter);
 		return 0;
 	}
 

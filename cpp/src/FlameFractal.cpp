@@ -571,12 +571,18 @@ namespace dwl
 
 					
 					float fStdDev = 0.0f;
-					if (iFilterMethod == 1) { fStdDev = 5 * (1 / n); }
-					else if (iFilterMethod == 2) { float fStdDev = min(5.0f, fAverageDensity / n); }
-
+					/*if (iFilterMethod == 1) { fStdDev = 5 * (1 / n); }
+					else if (iFilterMethod == 2) { float fStdDev = min(5.0f, fAverageDensity / n); }*/
+					
+					//fStdDev = 1.0f;
+					if (n < (fAverageDensity / 4)) { fStdDev = 5 * (1/(n/fAverageDensity)); }
+					else if (n < (fAverageDensity / 2)) { fStdDev = (1/(n/fAverageDensity)); }
+					else { fStdDev = .2; }
+					//cout << fStdDev << endl;
 					
 					//float fStdDev = 5;
-					int iSize = max(min((int)fStdDev * 3, 30), 1); // has to be at least 1!
+					//int iSize = max(min((int)fStdDev * 3, 30), 1); // has to be at least 1!
+					int iSize = max(min((int)fStdDev * 3, 60), 1); // has to be at least 1!
 
 					//cout << fStdDev << endl; // DEBUG
 					if (fStdDev > .1)
