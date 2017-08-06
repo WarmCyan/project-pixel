@@ -1,7 +1,7 @@
 //*************************************************************
 //  File: FlameFractal.h
 //  Date created: 1/28/2017
-//  Date edited: 8/1/2017
+//  Date edited: 8/5/2017
 //  Author: Nathan Martindale
 //  Copyright © 2017 Digital Warrior Labs
 //  Description: 
@@ -84,6 +84,11 @@ namespace dwl
 			vector<vector<vector<float> > >* m_vImage = NULL;
 			vector<vector<vector<float> > >* m_vPostProcImage = NULL;
 			vector<vector<vector<int> > >* m_vFinalImage = NULL;
+			
+			// pdfs
+			vector<float>* m_vPDFX = NULL;
+			vector<float>* m_vPDFY = NULL;
+			
 			
 			//vector<FFFunction> m_vFunctions = NULL;
 			vector<FFFunction> m_vFunctions;

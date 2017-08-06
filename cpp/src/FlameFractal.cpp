@@ -1,7 +1,7 @@
 //*************************************************************
 //  File: FlameFractal.cpp
 //  Date created: 1/28/2017
-//  Date edited: 3/3/2017
+//  Date edited: 8/5/2017
 //  Author: Nathan Martindale
 //  Copyright © 2017 Digital Warrior Labs
 //  Description: 
@@ -57,6 +57,8 @@ namespace dwl
 		delete m_vFinalImage;
 		delete m_vRampVals;
 		delete m_vRampPoints;
+		delete m_vPDFX;
+		delete m_vPDFY;
 		//m_vFunctions.clear();
 	}
 
@@ -102,19 +104,26 @@ namespace dwl
 	{
 		cout << "Preparing plot..." << endl;
 
-		ProgressBar pBar = ProgressBar(3, m_iProgressBarSize);
+		ProgressBar pBar = ProgressBar(6, m_iProgressBarSize);
 
 		m_vPoints = new vector<vector<vector<float> > >(m_iHeight, vector<vector<float> >(m_iWidth, vector<float>(4, 0)));
-
 		pBar.Update(1);
 		
 		m_vImage = new vector<vector<vector<float> > >(m_iHeight, vector<vector<float> >(m_iWidth, vector<float>(4, 0)));
-		m_vPostProcImage = new vector<vector<vector<float> > >(m_iHeight, vector<vector<float> >(m_iWidth, vector<float>(4, 0)));
 		pBar.Update(2);
 		
-		m_vFinalImage = new vector<vector<vector<int> > >(m_iHeight, vector<vector<int> >(m_iWidth, vector<int>(4, 0)));
-
+		m_vPostProcImage = new vector<vector<vector<float> > >(m_iHeight, vector<vector<float> >(m_iWidth, vector<float>(4, 0)));
 		pBar.Update(3);
+		
+		m_vFinalImage = new vector<vector<vector<int> > >(m_iHeight, vector<vector<int> >(m_iWidth, vector<int>(4, 0)));
+		pBar.Update(4);
+
+		m_vPDFX = new vector<float>(m_iWidth, 0);
+		pBar.Update(5);
+		
+		m_vPDFY = new vector<float>(m_iHeight, 0);
+		pBar.Update(6);
+		
 		pBar.Finish();
 	
 		cout << "Plot prepared!" << endl;
@@ -493,6 +502,37 @@ namespace dwl
 				(*m_vImage)[y][x][3] = (*m_vPoints)[y][x][3];
 			}
 		}			
+
+		// determine axis histograms
+		float fActualTotalDensity = 0.0f;
+		float fMaxXHist = 0.0f;
+		float fMaxYHist = 0.0f;
+		for (int y = 0; y < m_iHeight; y++)
+		{
+			float fRowDensity = 0.0f;
+			for (int x = 0; x < (*m_vImage)[y].size(); x++) { fRowDensity += (*m_vImage)[y][x][3]; }
+
+			(*m_vPDFY)[y] = fRowDensity;
+			fActualTotalDensity += fRowDensity;
+		}
+		for (int x = 0; x < m_iWidth; x++)
+		{
+			float fColDensity = 0.0f;
+			for (int y = 0; y < m_iHeight; y++) { fColDensity += (*m_vImage)[y][x][3]; }
+
+			(*m_vPDFX)[x] = fColDensity;
+		}
+		for (int i = 0; i < m_vPDFX->size(); i++) 
+		{ 
+			(*m_vPDFX)[i] = (*m_vPDFX)[i] / fActualTotalDensity; 
+			//cout << (*m_vPDFX)[i] << endl;
+			if ((*m_vPDFX)[i] > fMaxXHist) { fMaxXHist = (*m_vPDFX)[i]; }
+		}
+		for (int i = 0; i < m_vPDFY->size(); i++) 
+		{ 
+			(*m_vPDFY)[i] = (*m_vPDFY)[i] / fActualTotalDensity; 
+			if ((*m_vPDFY)[i] > fMaxYHist) { fMaxYHist = (*m_vPDFY)[i]; }
+		}
 		
 		ProgressBar pBar2 = ProgressBar(m_vImage->size() - 1, m_iProgressBarSize);
 
@@ -554,6 +594,39 @@ namespace dwl
 		
 		if (iFilterMethod > 0)
 		{
+			//smooth pdfs
+			for (int x = 0; x < m_vPDFX->size() - 8; x+=8)
+			{
+				float fPoint1 = (*m_vPDFX)[x];
+				float fPoint2 = (*m_vPDFX)[x+8];
+				float fSlope = (fPoint2 - fPoint1) / 8;
+				
+				(*m_vPDFX)[x+1] = fPoint1 + fSlope;
+				(*m_vPDFX)[x+2] = fPoint1 + fSlope*2;
+				(*m_vPDFX)[x+3] = fPoint1 + fSlope*3;
+				(*m_vPDFX)[x+4] = fPoint1 + fSlope*4;
+				(*m_vPDFX)[x+5] = fPoint1 + fSlope*5;
+				(*m_vPDFX)[x+6] = fPoint1 + fSlope*6;
+				(*m_vPDFX)[x+7] = fPoint1 + fSlope*7;
+				(*m_vPDFX)[x+8] = fPoint1 + fSlope*8;
+			}
+			for (int y = 0; y < m_vPDFY->size() - 8; y+=8)
+			{
+				float fPoint1 = (*m_vPDFY)[y];
+				float fPoint2 = (*m_vPDFY)[y+8];
+				float fSlope = (fPoint2 - fPoint1) / 8;
+				
+				(*m_vPDFY)[y+1] = fPoint1 + fSlope;
+				(*m_vPDFY)[y+2] = fPoint1 + fSlope*2;
+				(*m_vPDFY)[y+3] = fPoint1 + fSlope*3;
+				(*m_vPDFY)[y+4] = fPoint1 + fSlope*4;
+				(*m_vPDFY)[y+5] = fPoint1 + fSlope*5;
+				(*m_vPDFY)[y+6] = fPoint1 + fSlope*6;
+				(*m_vPDFY)[y+7] = fPoint1 + fSlope*7;
+				(*m_vPDFY)[y+8] = fPoint1 + fSlope*8;
+			}
+
+			
 			ProgressBar pBar3 = ProgressBar(m_vPostProcImage->size() - 1, m_iProgressBarSize);
 			for (int y = 0; y < m_vPostProcImage->size(); y++)
 			{
@@ -574,18 +647,42 @@ namespace dwl
 					/*if (iFilterMethod == 1) { fStdDev = 5 * (1 / n); }
 					else if (iFilterMethod == 2) { float fStdDev = min(5.0f, fAverageDensity / n); }*/
 					
+					float fYHist = (*m_vPDFY)[y];
+					float fXHist = (*m_vPDFX)[x];
+
+					float fYHistRatio = fYHist / fMaxYHist;
+					float fXHistRatio = fXHist / fMaxXHist;
+
+					//cout << fYHistRatio << " " << fXHistRatio << endl;
+
+					fStdDev = 5 / (fYHistRatio + fXHistRatio) * 1/(2*n/fAverageDensity);
+
+					//fStdDev = 1 / (fYHist + fXHist) / 500;
+					//fStdDev *= fStdDev;
+					//fStdDev *= fStdDev;
+					
 					//fStdDev = 1.0f;
-					if (n < (fAverageDensity / 4)) { fStdDev = 5 * (1/(n/fAverageDensity)); }
-					else if (n < (fAverageDensity / 2)) { fStdDev = (1/(n/fAverageDensity)); }
-					else { fStdDev = .2; }
+					/*if (n < (fAverageDensity / 5)) { fStdDev = 3 * (1/(n/fAverageDensity)); }
+					else if (n < (fAverageDensity / 4)) { fStdDev = 2 * (1/(n/fAverageDensity)); }
+					else if (n < (fAverageDensity / 3)) { fStdDev = 1 * (1/(n/fAverageDensity)); }
+					else if (n < (fAverageDensity / 2)) { fStdDev = .5 * (1/(n/fAverageDensity)); }
+					else { fStdDev = .25 * (1/(n/fAverageDensity)); }*/
+					//fStdDev = (1 / (n/fAverageDensity));
+					//fStdDev *= fStdDev;
+					//fStdDev = max(30*(-(1/(2*(fMaxDensity/4)))*n+1), 0.0f);
+					//fStdDev = max(20*(-(1/(2*(fAverageDensity/4)))*n+1), 0.0f);
+					//else if (n < (fAverageDensity / 2)) { fStdDev = (1/(n/fAverageDensity)); }
+					//else { fStdDev = .2; }
 					//cout << fStdDev << endl;
 					
-					//float fStdDev = 5;
+					//fStdDev = 5; // DEBUG
 					//int iSize = max(min((int)fStdDev * 3, 30), 1); // has to be at least 1!
 					int iSize = max(min((int)fStdDev * 3, 60), 1); // has to be at least 1!
 
+					
+
 					//cout << fStdDev << endl; // DEBUG
-					if (fStdDev > .1)
+					if (fStdDev > .1) // comment only for debug
 					{
 						vector<vector<float> >* vMatrix = CalculateConvolutionMatrix(iSize, fStdDev, false);
 						FilterPoint(x, y, vMatrix, false);
@@ -596,32 +693,171 @@ namespace dwl
 						delete vMatrix;
 					}
 
+
+					// 60-.2
+					//fR = max(.033333f * fStdDev - 1, 0);
+					/*cout << fStdDev << endl;
+					fStdDev = min(fStdDev, 30.0f);
+					fR = 255*(min((fStdDev / 15.0f), 1.0f));
+					fG = 255*(min(-(fStdDev / 15.0f) + 2, 1.0f));
+					fB = 0.0f;*/
+					
+					// display histograms
+					//if (x == x)
+					//{
+						//fR = fG = fB = (*m_vPDFY)[y]*25500;
+						//if (x == 0) { cout << fR << endl; }
+					//}
+
+					//cout << fR << " " << fG << endl;
+
 					(*m_vPostProcImage)[y][x][0] = fR;
 					(*m_vPostProcImage)[y][x][1] = fG;
 					(*m_vPostProcImage)[y][x][2] = fB;
 
-					if (fB == 0 && (*m_vImage)[y][x][2] != 0)
+					/*if (fB == 0 && (*m_vImage)[y][x][2] != 0)
 					{
 						cout << "actual blue for " << x << "," << y << ": " << (*m_vImage)[y][x][2] << endl;
 						cout << "WARNING - zeroed" << endl;
 						vector<vector<float> >* vMatrix = CalculateConvolutionMatrix(iSize, fStdDev, true);
 						FilterPoint(x, y, vMatrix, true);
 						return;
-					}
+					}*/
 				}
 			}
 			pBar3.Finish();
 		}
-
+		
 
 		// FOURTH PASS
-		cout << "Fourth pass... (final transformations)" << endl;
+		cout << "Fourth pass... (second post-proc)" << endl;	
+		
+		if (iFilterMethod > 0)
+		{
+		
 
-		ProgressBar pBar4 = ProgressBar(m_vImage->size() - 1, m_iProgressBarSize);
+		
+			for (int y = 0; y < m_vPostProcImage->size(); y++)
+			{
+				for (int x = 0; x < (*m_vPostProcImage)[y].size(); x++)
+				{
+					(*m_vImage)[y][x][0] = (*m_vPostProcImage)[y][x][0];
+					(*m_vImage)[y][x][1] = (*m_vPostProcImage)[y][x][1];
+					(*m_vImage)[y][x][2] = (*m_vPostProcImage)[y][x][2];
+					(*m_vImage)[y][x][3] = (*m_vPostProcImage)[y][x][3];
+				}
+			}			
+			
+			ProgressBar pBar4 = ProgressBar(m_vPostProcImage->size() - 1, m_iProgressBarSize);
+			for (int y = 0; y < m_vPostProcImage->size(); y++)
+			{
+				pBar4.Update(y);
+				//cout << "row " << y << endl;
+				for (int x = 0; x < (*m_vPostProcImage)[y].size(); x++)
+				{
+					float fR = (*m_vImage)[y][x][0];
+					float fG = (*m_vImage)[y][x][1];
+					float fB = (*m_vImage)[y][x][2];
+					//float fDensity = (*m_vPoints)[y][x][3];
+
+					//float n = fDensity;
+					//if (n < 1) { n = 1; }
+
+					
+					float fStdDev = 0.5f;
+					/*if (iFilterMethod == 1) { fStdDev = 5 * (1 / n); }
+					else if (iFilterMethod == 2) { float fStdDev = min(5.0f, fAverageDensity / n); }*/
+					
+					//float fYHist = (*m_vPDFY)[y];
+					//float fXHist = (*m_vPDFX)[x];
+
+					//float fYHistRatio = fYHist / fMaxYHist;
+					//float fXHistRatio = fXHist / fMaxXHist;
+
+					//cout << fYHistRatio << " " << fXHistRatio << endl;
+
+					//fStdDev = 5 / (fYHistRatio + fXHistRatio) * 1/(2*n/fAverageDensity);
+
+					//fStdDev = 1 / (fYHist + fXHist) / 500;
+					//fStdDev *= fStdDev;
+					//fStdDev *= fStdDev;
+					
+					//fStdDev = 1.0f;
+					/*if (n < (fAverageDensity / 5)) { fStdDev = 3 * (1/(n/fAverageDensity)); }
+					else if (n < (fAverageDensity / 4)) { fStdDev = 2 * (1/(n/fAverageDensity)); }
+					else if (n < (fAverageDensity / 3)) { fStdDev = 1 * (1/(n/fAverageDensity)); }
+					else if (n < (fAverageDensity / 2)) { fStdDev = .5 * (1/(n/fAverageDensity)); }
+					else { fStdDev = .25 * (1/(n/fAverageDensity)); }*/
+					//fStdDev = (1 / (n/fAverageDensity));
+					//fStdDev *= fStdDev;
+					//fStdDev = max(30*(-(1/(2*(fMaxDensity/4)))*n+1), 0.0f);
+					//fStdDev = max(20*(-(1/(2*(fAverageDensity/4)))*n+1), 0.0f);
+					//else if (n < (fAverageDensity / 2)) { fStdDev = (1/(n/fAverageDensity)); }
+					//else { fStdDev = .2; }
+					//cout << fStdDev << endl;
+					
+					//fStdDev = 5; // DEBUG
+					//int iSize = max(min((int)fStdDev * 3, 30), 1); // has to be at least 1!
+					int iSize = max(min((int)fStdDev * 3, 60), 1); // has to be at least 1!
+
+					
+
+					//cout << fStdDev << endl; // DEBUG
+					if (fStdDev > .1) // comment only for debug
+					{
+						vector<vector<float> >* vMatrix = CalculateConvolutionMatrix(iSize, fStdDev, false);
+						FilterPoint(x, y, vMatrix, false);
+						fR = m_fTempR;
+						fG = m_fTempG;
+						fB = m_fTempB;
+
+						delete vMatrix;
+					}
+
+
+					// 60-.2
+					//fR = max(.033333f * fStdDev - 1, 0);
+					/*cout << fStdDev << endl;
+					fStdDev = min(fStdDev, 30.0f);
+					fR = 255*(min((fStdDev / 15.0f), 1.0f));
+					fG = 255*(min(-(fStdDev / 15.0f) + 2, 1.0f));
+					fB = 0.0f;*/
+					
+					// display histograms
+					//if (x == x)
+					//{
+						//fR = fG = fB = (*m_vPDFY)[y]*25500;
+						//if (x == 0) { cout << fR << endl; }
+					//}
+
+					//cout << fR << " " << fG << endl;
+
+					(*m_vPostProcImage)[y][x][0] = fR;
+					(*m_vPostProcImage)[y][x][1] = fG;
+					(*m_vPostProcImage)[y][x][2] = fB;
+
+					/*if (fB == 0 && (*m_vImage)[y][x][2] != 0)
+					{
+						cout << "actual blue for " << x << "," << y << ": " << (*m_vImage)[y][x][2] << endl;
+						cout << "WARNING - zeroed" << endl;
+						vector<vector<float> >* vMatrix = CalculateConvolutionMatrix(iSize, fStdDev, true);
+						FilterPoint(x, y, vMatrix, true);
+						return;
+					}*/
+				}
+			}
+			pBar4.Finish();
+		}
+
+
+		// FIFTH PASS
+		cout << "Fifth pass... (final transformations)" << endl;
+
+		ProgressBar pBar5 = ProgressBar(m_vImage->size() - 1, m_iProgressBarSize);
 
 		for (int y = 0; y < m_vImage->size(); y++)
 		{
-			pBar4.Update(y);
+			pBar5.Update(y);
 			for (int x = 0; x < (*m_vImage)[y].size(); x++)
 			{
 				/*(*m_vFinalImage)[y][x][0] = (int)((*m_vImage)[y][x][0]);
@@ -643,7 +879,7 @@ namespace dwl
 				}*/
 			}
 		}
-		pBar4.Finish();
+		pBar5.Finish();
 	}
 
 	void FlameFractal::SaveFunctionCode(string sFileName)
