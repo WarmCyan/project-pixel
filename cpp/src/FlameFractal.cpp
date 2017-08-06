@@ -1,7 +1,7 @@
 //*************************************************************
 //  File: FlameFractal.cpp
 //  Date created: 1/28/2017
-//  Date edited: 8/5/2017
+//  Date edited: 8/6/2017
 //  Author: Nathan Martindale
 //  Copyright © 2017 Digital Warrior Labs
 //  Description: 
@@ -655,7 +655,9 @@ namespace dwl
 
 					//cout << fYHistRatio << " " << fXHistRatio << endl;
 
-					fStdDev = 5 / (fYHistRatio + fXHistRatio) * 1/(2*n/fAverageDensity);
+					//fStdDev = 5 / (fYHistRatio + fXHistRatio) * 1/(2*n/fAverageDensity); // dis good
+					
+					fStdDev = 4 / (fYHistRatio + fXHistRatio) * 1/(2*n/fAverageDensity); // dis good
 
 					//fStdDev = 1 / (fYHist + fXHist) / 500;
 					//fStdDev *= fStdDev;
@@ -764,7 +766,7 @@ namespace dwl
 					//if (n < 1) { n = 1; }
 
 					
-					float fStdDev = 0.5f;
+					float fStdDev = 0.2f;
 					/*if (iFilterMethod == 1) { fStdDev = 5 * (1 / n); }
 					else if (iFilterMethod == 2) { float fStdDev = min(5.0f, fAverageDensity / n); }*/
 					
