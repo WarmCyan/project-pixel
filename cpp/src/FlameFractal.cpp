@@ -1,7 +1,7 @@
 //*************************************************************
 //  File: FlameFractal.cpp
 //  Date created: 1/28/2017
-//  Date edited: 8/6/2017
+//  Date edited: 8/10/2017
 //  Author: Nathan Martindale
 //  Copyright © 2017 Digital Warrior Labs
 //  Description: 
@@ -451,7 +451,7 @@ namespace dwl
 		m_fTempB = fB;
 	}
 
-	void FlameFractal::Render(float fGamma, float fBrightness, int iFilterMethod)
+	void FlameFractal::Render(float fGamma, float fBrightness, int iFilterMethod, float fHistBlurWeight, float fDensityBlurWeight, float fSecondPassBlur)
 	{
 		cout << "Rendering... (gamma = " << fGamma << ", brightness = " << fBrightness << ")" << endl;
 
@@ -657,7 +657,8 @@ namespace dwl
 
 					//fStdDev = 5 / (fYHistRatio + fXHistRatio) * 1/(2*n/fAverageDensity); // dis good
 					
-					fStdDev = 4 / (fYHistRatio + fXHistRatio) * 1/(2*n/fAverageDensity); // dis good
+					//fStdDev = 4 / (fYHistRatio + fXHistRatio) * 1/(2*n/fAverageDensity); // dis good (good defaults)
+					fStdDev = (fHistBlurWeight * (4 / (fYHistRatio + fXHistRatio))) * (fDensityBlurWeight * (1/(2*n/fAverageDensity))); // dis good
 
 					//fStdDev = 1 / (fYHist + fXHist) / 500;
 					//fStdDev *= fStdDev;
@@ -766,7 +767,12 @@ namespace dwl
 					//if (n < 1) { n = 1; }
 
 					
-					float fStdDev = 0.2f;
+					//float fStdDev = 0.2f; // dis good default
+					float fStdDev = fSecondPassBlur;
+
+
+
+					
 					/*if (iFilterMethod == 1) { fStdDev = 5 * (1 / n); }
 					else if (iFilterMethod == 2) { float fStdDev = min(5.0f, fAverageDensity / n); }*/
 					

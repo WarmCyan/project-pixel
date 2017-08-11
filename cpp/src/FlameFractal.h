@@ -1,7 +1,7 @@
 //*************************************************************
 //  File: FlameFractal.h
 //  Date created: 1/28/2017
-//  Date edited: 8/5/2017
+//  Date edited: 8/10/2017
 //  Author: Nathan Martindale
 //  Copyright © 2017 Digital Warrior Labs
 //  Description: 
@@ -126,6 +126,7 @@ namespace dwl
 
 			void AddFunction(FFFunction pFunction) { m_vFunctions.push_back(pFunction); }
 			void ClearFunctions() { m_vFunctions = vector<FFFunction>(); }
+			vector<FFFunction> GetFunctions() { return m_vFunctions; }
 
 			void SetOffsetX(float fOffsetX) { m_fOffsetX = fOffsetX; }
 			void SetOffsetY(float fOffsetY) { m_fOffsetY = fOffsetY; }
@@ -143,7 +144,7 @@ namespace dwl
 			void SetBaseImage(float fR, float fG, float fB, float fA);
 			void InitializeSolution();
 			void Solve(int iIterationCount);
-			void Render(float fGamma, float fBrightness, int iFilterMethod);
+			void Render(float fGamma, float fBrightness, int iFilterMethod, float fHistBlurWeight, float fDensityBlurWeight, float fSecondPassBlur);
 
 			// TODO: don't forget, store functions as well!
 			void SaveFunctionCode(string sFileName);

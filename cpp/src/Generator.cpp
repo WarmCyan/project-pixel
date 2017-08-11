@@ -1,7 +1,7 @@
 //*************************************************************
 //  File: Generator.cpp
 //  Date created: 1/28/2017
-//  Date edited: 8/2/2017
+//  Date edited: 8/10/2017
 //  Author: Nathan Martindale
 //  Copyright © 2017 Digital Warrior Labs
 //  Description: 
@@ -91,7 +91,7 @@ int main()
 	//ff.SaveImageTrace("collection/" + to_string(iCollection));
 	
 	// render
-	ff.Render(2.8, 1.2, 0);
+	ff.Render(2.8, 1.2, 0, 0, 0, 0);
 	ff.SaveImageData("imgdata.json");
 	system("python3 ./saveaspng.py");
 	string sCopyCommand = "copy \"./render.png\" \"./collection/" + to_string(iCollection) + "_render.png\""; // TODO: make cross platform!!
@@ -257,7 +257,7 @@ int HandleCommand(string sCommand)
 	else if (vParts[0] == "PAUSE") { bPaused = true; return 3; }
 	else if (vParts[0] == "help")
 	{
-		cout << "exit {rolling}\necho [MESSAGE]\ncollection [INDEX|increment]\nrun [SCRIPT|rolling]\ncreate [WIDTH] [HEIGHT]\nzoom [X] [Y]\ncolor [blue|green|ttu|purple|purpleblue|orange|yellow|red|portal]\ninit\nsolve [COUNT]\nrender [GAMMA] [BRIGHTNESS]\ngenerate\nsave [image|functions|trace|collection] {FILE}\nload [functions|trace] [FILE]" << endl;
+		cout << "exit {rolling}\necho [MESSAGE]\ncollection [INDEX|increment]\nrun [SCRIPT|rolling]\ncreate [WIDTH] [HEIGHT]\nzoom [X] [Y]\ncolor [blue|green|ttu|purple|purpleblue|orange|yellow|red|portal]\ninit\nsolve [COUNT]\nrender [GAMMA] [BRIGHTNESS] {FILTERNUM} {HISTBLURWEIGHT=1} {DENSITYBLURWEIGHT=1} {SECONDPASSBLUR=.2}\ngenerate\nsave [image|functions|trace|collection] {FILE}\nload [functions|trace] [FILE]" << endl;
 		return 0;
 	}
 	else if (vParts[0] == "run")
@@ -489,18 +489,24 @@ int HandleCommand(string sCommand)
 
 	else if (vParts[0] == "render")
 	{
-		if (vParts.size() != 3 && vParts.size() != 4)
+		if (vParts.size() < 3 || vParts.size() > 7)
 		{
-			sErrorMsg = "Bad arguments!\nFORMAT: render [GAMMA] [BRIGHTNESS] {FILTERNUM}";
+			sErrorMsg = "Bad arguments!\nFORMAT: render [GAMMA] [BRIGHTNESS] {FILTERNUM} {HISTBLURWEIGHT=1} {DENSITYBLURWEIGHT=1} {SECONDPASBLUR=.2}";
 			return 1;
 		}
 
 		float fGamma = stof(vParts[1]);
 		float fBrightness = stof(vParts[2]);
 		int iFilter = 0;
-		if (vParts.size() == 4) { iFilter = stoi(vParts[3]); }
+		float fHistBlurWeight = 1;
+		float fDensityBlurWeight = 1;
+		float fSecondPassBlur = 0.2f;
+		if (vParts.size() > 3) { iFilter = stoi(vParts[3]); }
+		if (vParts.size() > 4) { fHistBlurWeight = stof(vParts[4]); }
+		if (vParts.size() > 5) { fDensityBlurWeight = stof(vParts[5]); }
+		if (vParts.size() > 6) { fSecondPassBlur = stof(vParts[6]); }
 		cout << ">> Parsed [Gamma: " << fGamma << "] [Brightness: " << fBrightness << "]" << endl;
-		pFractal->Render(fGamma, fBrightness, iFilter);
+		pFractal->Render(fGamma, fBrightness, iFilter, fHistBlurWeight, fDensityBlurWeight, fSecondPassBlur);
 		return 0;
 	}
 

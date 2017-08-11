@@ -1,7 +1,7 @@
 //*************************************************************
 //  File: FunctionGenerator.h
 //  Date created: 2/19/2017
-//  Date edited: 2/21/2017
+//  Date edited: 8/10/2017
 //  Author: Nathan Martindale
 //  Copyright © 2017 Digital Warrior Labs
 //  Description: 

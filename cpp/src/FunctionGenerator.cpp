@@ -1,7 +1,7 @@
 //*************************************************************
 //  File: FunctionGenerator.cpp
 //  Date created: 2/19/2017
-//  Date edited: 2/21/2017
+//  Date edited: 8/10/2017
 //  Author: Nathan Martindale
 //  Copyright © 2017 Digital Warrior Labs
 //  Description: 
@@ -77,6 +77,23 @@ namespace dwl
 		float fRandom = ((float) rand()) / (float) RAND_MAX;
 
 		return fRandom;
+	}
+
+	// NOTE: bounds are inclusive
+	float FunctionGenerator::RandomInt(int iLow, int iHigh) { return (int)round(RandomFloat() * iHigh - iLow); }
+
+	void FunctionGenerator::GenerateFractalFunctionSet(FlameFractal* pFractal)
+	{
+		// How many functions?
+		
+		// For each function
+		//	Function variation decision thresh?
+
+		// Symmetry?
+		
+		// current function weight sum in fractal?
+
+		// Symmetry count?
 	}
 
 }
