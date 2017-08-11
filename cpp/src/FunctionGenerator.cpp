@@ -14,7 +14,7 @@
 
 namespace dwl
 {
-	FFFunction* FunctionGenerator::GenerateFunction()
+	FFFunction* FunctionGenerator::GenerateFunction(float fDecisionThreshold)
 	{
 		FFFunction* pFunction = new FFFunction();
 
@@ -32,12 +32,18 @@ namespace dwl
 		if (RandomFloat() > .5) { fD = RandomFloat() * 4 - 2; }
 		if (RandomFloat() > .5) { fE = RandomFloat() * 4 - 2; }
 		if (RandomFloat() > .5) { fF = RandomFloat() * 4 - 2; }
+
+		bool bValidFunction = false; // need at least ONE variation to have a weight
 		
-		for (int i = 0; i <= 8; i++)
+		while (!bValidFunction)
 		{
-			if (RandomFloat() > .5)
+			for (int i = 0; i <= 8; i++)
 			{
-				pFunction->SetVariationWeight(i, RandomFloat());
+				if (RandomFloat() > fDecisionThreshold)
+				{
+					bValidFunction = true;
+					pFunction->SetVariationWeight(i, RandomFloat());
+				}
 			}
 		}
 
@@ -79,23 +85,42 @@ namespace dwl
 		return fRandom;
 	}
 
-	// NOTE: bounds are inclusive
-	float FunctionGenerator::RandomInt(int iLow, int iHigh) { return (int)round(RandomFloat() * iHigh - iLow); }
+	// NOTE: bounds are inclusive (and must be positive)
+	int FunctionGenerator::RandomInt(int iLow, int iHigh) { return (int)round(RandomFloat() * (iHigh-iLow) + iLow); }
 
 	void FunctionGenerator::GenerateFractalFunctionSet(FlameFractal* pFractal)
 	{
 		// How many functions?
+		int iFunctionCount = RandomInt(4,10);
+		cout << "Choosing " << iFunctionCount << " functions..." << endl;
+
+		float fWeightSum = 0.0f;
 		
-		// For each function
-		//	Function variation decision thresh?
+		for (int i = 0; i < iFunctionCount; i++)
+		{
+			float fVarDecThresh = (RandomFloat() * 0.8f) + .1; // .1-.9
+			cout << "Variation decision thresh: " << fVarDecThresh << endl;
+			FFFunction* pFunc = this->GenerateFunction(fVarDecThresh);
+			fWeightSum += pFunc->GetWeight();
+			pFractal->AddFunction(*pFunc);
+		}
 
 		// Symmetry?
-		
-		// current function weight sum in fractal?
+		if (RandomFloat() > .3)
+		{
+			int iSymmetryCount = RandomInt(2,8);
+			int iDegree = (int)round(360.0f / (float)iSymmetryCount);
 
-		// Symmetry count?
+			cout << "Using " << iSymmetryCount << " symmetry points..." << endl;
+
+			for (int i = 1; i <= iSymmetryCount - 1; i++)
+			{
+				FFFunction* pFunc = this->GenerateSymmetryFunction(i*iDegree);
+				pFunc->SetWeight(fWeightSum);
+				pFractal->AddFunction(*pFunc);
+			}
+		}
 	}
-
 }
 
 #endif

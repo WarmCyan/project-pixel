@@ -423,7 +423,8 @@ int HandleCommand(string sCommand)
 	{
 		cout << ">> Generating random functions..." << endl;
 		FunctionGenerator pGen = FunctionGenerator();
-		FFFunction* pF0 = pGen.GenerateFunction();
+		pGen.GenerateFractalFunctionSet(pFractal);
+		/*FFFunction* pF0 = pGen.GenerateFunction();
 		pFractal->AddFunction(*pF0);
 		FFFunction* pF1 = pGen.GenerateFunction();
 		pFractal->AddFunction(*pF1);
@@ -437,7 +438,7 @@ int HandleCommand(string sCommand)
 		pFractal->AddFunction(*pFSym);
 		FFFunction* pFSym2 = pGen.GenerateSymmetryFunction(240);
 		pFSym2->SetWeight(pF0->GetWeight() + pF1->GetWeight() + pF2->GetWeight() + pF3->GetWeight());
-		pFractal->AddFunction(*pFSym2);
+		pFractal->AddFunction(*pFSym2);*/
 
 		cout << ">> Generated!" << endl;
 		return 0;

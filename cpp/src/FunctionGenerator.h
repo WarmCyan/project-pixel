@@ -11,6 +11,7 @@
 #define FF_FUNCTION_GENERATOR_H
 
 #include "Function.h"
+#include "FlameFractal.h"
 #include <random>
 #include <cmath>
 
@@ -22,10 +23,12 @@ namespace dwl
 	{
 		private:	
 			float RandomFloat();
+			int RandomInt(int iLow, int iHigh);
 			
 		public:
-			FFFunction* GenerateFunction();
+			FFFunction* GenerateFunction(float fDecisionThreshold);
 			FFFunction* GenerateSymmetryFunction(int iDegree);
+			void GenerateFractalFunctionSet(FlameFractal* pFractal);
 	};
 }
 
