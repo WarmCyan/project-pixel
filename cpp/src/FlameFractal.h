@@ -1,7 +1,7 @@
 //*************************************************************
 //  File: FlameFractal.h
 //  Date created: 1/28/2017
-//  Date edited: 8/10/2017
+//  Date edited: 8/11/2017
 //  Author: Nathan Martindale
 //  Copyright © 2017 Digital Warrior Labs
 //  Description: 
@@ -38,6 +38,8 @@ namespace dwl
 			int m_iProgressBarSize = 80;
 
 			bool m_bInitialized = false;
+
+			bool m_bDivergent = false;
 			
 			int m_iWidth;
 			int m_iHeight;

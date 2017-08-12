@@ -1,7 +1,7 @@
 //*************************************************************
 //  File: FlameFractal.cpp
 //  Date created: 1/28/2017
-//  Date edited: 8/10/2017
+//  Date edited: 8/11/2017
 //  Author: Nathan Martindale
 //  Copyright © 2017 Digital Warrior Labs
 //  Description: 
@@ -25,6 +25,8 @@ namespace dwl
 	FlameFractal::FlameFractal(int iWidth, int iHeight)
 	{
 		m_bInitialized = false;
+
+		m_bDivergent = false;
 		
 		m_iWidth = iWidth;
 		m_iHeight = iHeight;
@@ -312,6 +314,15 @@ namespace dwl
 			fX = m_vFunctions[iSelectedFunction].GetResultX();
 			fY = m_vFunctions[iSelectedFunction].GetResultY();
 
+			// check for unconvergent solutions
+			if (fY < -10000000000 || fY > 10000000000 || fY < -10000000000 || fY > 10000000000)
+			{
+				pBar.Finish();
+				cout << "WARNING - Solution diverges, skipping further iterations..." << endl;
+				m_bDivergent = true;
+				break;
+			}
+
 			// run final transform
 			FinalTransform(fX, fY);
 			fX_f = m_fTempX;
@@ -343,7 +354,7 @@ namespace dwl
 		}
 		pBar.Finish();
 
-		cout << "Solving complete!" << endl;
+		if (!m_bDivergent) { cout << "Solving complete!" << endl; }
 	}
 
 	void FlameFractal::CopyImage(vector<vector<vector<float> > >* m_vInput, vector<vector<vector<float> > >* m_vOutput)
@@ -578,6 +589,8 @@ namespace dwl
 		// THIRD PASS
 		
 		cout << "Third pass... (Post processing/filtering)" << endl;
+
+		if (m_bDivergent) { cout << "WARNING - Divergent solution, skipping all post proc..." << endl; iFilterMethod = 0; }
 
 		//m_vPostProcImage = m_vImage;
 		for (int y = 0; y < m_vImage->size(); y++)
