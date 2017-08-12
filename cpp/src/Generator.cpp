@@ -9,6 +9,7 @@
 
 
 #include <iostream>
+#include <iomanip>
 
 #include <cmath>
 #include <vector>
@@ -39,6 +40,14 @@ string sErrorMsg = "";
 
 bool bRollingMode = false;
 bool bPaused = false;
+
+
+float fStatGamma = 0.0f;
+float fStatBrightness = 0.0f;
+int iStatFilter = 0;
+float fStatHistWeight = 1.0f;
+float fStatDensityWeight = 1.0f;
+float fStatSecondBlur = .2f;
 
 int main()
 {
@@ -257,7 +266,7 @@ int HandleCommand(string sCommand)
 	else if (vParts[0] == "PAUSE") { bPaused = true; return 3; }
 	else if (vParts[0] == "help")
 	{
-		cout << "exit {rolling}\necho [MESSAGE]\ncollection [INDEX|increment]\nrun [SCRIPT|rolling]\ncreate [WIDTH] [HEIGHT]\nzoom [X] [Y]\ncolor [blue|green|ttu|purple|purpleblue|orange|yellow|red|portal]\ninit\nsolve [COUNT]\nrender [GAMMA] [BRIGHTNESS] {FILTERNUM} {HISTBLURWEIGHT=1} {DENSITYBLURWEIGHT=1} {SECONDPASSBLUR=.2}\ngenerate\nsave [image|functions|trace|collection] {FILE}\nload [functions|trace] [FILE]" << endl;
+		cout << "exit {rolling}\necho [MESSAGE]\ncollection [INDEX|increment]\nrun [SCRIPT|rolling]\ncreate [WIDTH] [HEIGHT]\nzoom [X] [Y]\ncolor [blue|green|ttu|purple|purpleblue|orange|yellow|red|portal]\ninit\nsolve [COUNT|avg] {AVGDENSITY}\nrender [GAMMA] [BRIGHTNESS] {FILTERNUM} {HISTBLURWEIGHT=1} {DENSITYBLURWEIGHT=1} {SECONDPASSBLUR=.2}\ngenerate\nsave [image|functions|trace|collection] {FILE}\nload [functions|trace] [FILE]" << endl;
 		return 0;
 	}
 	else if (vParts[0] == "run")
@@ -367,46 +376,55 @@ int HandleCommand(string sCommand)
 		if (vParts[1] == "blue")
 		{
 			pFractal->SetColorRamp({0.0f, 1.0f}, {{1.0f, 1.0f, 1.0f}, {0.0f, 0.5f, 1.0f}}); // nice blue!
+			pFractal->SetColorName("blue");
 			bFound = true;
 		}
 		else if (vParts[1] == "green")
 		{
 			pFractal->SetColorRamp({0.0f, 1.0f}, {{1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.5f}}); // greeen
+			pFractal->SetColorName("green");
 			bFound = true;
 		}
 		else if (vParts[1] == "ttu")
 		{
 			pFractal->SetColorRamp({0.0f, 0.5f, 1.0f}, {{1.0f, 1.0f, 0.0f}, {0.5f, 0.5f, 0.5f}, {0.7f, 0.4f, 1.0f}}); // TTU!
+			pFractal->SetColorName("ttu");
 			bFound = true;
 		}
 		else if (vParts[1] == "purple")
 		{
 			pFractal->SetColorRamp({0.0f, 1.0f}, {{1.0f, 1.0f, 1.0f}, {0.7f, 0.4f, 1.0f}}); // purple
+			pFractal->SetColorName("purple");
 			bFound = true;
 		}
 		else if (vParts[1] == "purpleblue")
 		{
 			pFractal->SetColorRamp({0.0f, 0.5f, 1.0f}, {{0.0f, 0.5f, 1.0f}, {1.0f, 1.0f, 1.0f}, {0.5f, 0.2f, 0.7f}}); // purple'n blue
+			pFractal->SetColorName("purpleblue");
 			bFound = true;
 		}
 		else if (vParts[1] == "orange")
 		{
 			pFractal->SetColorRamp({0.0f, 1.0f}, {{1.0f, 1.0f, 1.0f}, {1.0f, 0.5f, 0.0f}});
+			pFractal->SetColorName("orange");
 			bFound = true;
 		}
 		else if (vParts[1] == "yellow")
 		{
 			pFractal->SetColorRamp({0.0f, 1.0f}, {{1.0f, 1.0f, 1.0f}, {1.0f, 1.0f, 0.0f}});
+			pFractal->SetColorName("yellow");
 			bFound = true;
 		}
 		else if (vParts[1] == "red")
 		{
 			pFractal->SetColorRamp({0.0f, 1.0f}, {{1.0f, 1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}});
+			pFractal->SetColorName("red");
 			bFound = true;
 		}
 		else if (vParts[1] == "portal")
 		{
 			pFractal->SetColorRamp({0.0f, 0.5f, 1.0f}, {{1.0f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.5f, 1.0f}});
+			pFractal->SetColorName("portal");
 			bFound = true;
 		}
 
@@ -476,13 +494,19 @@ int HandleCommand(string sCommand)
 
 	else if (vParts[0] == "solve")
 	{
-		if (vParts.size() != 2)
+		if (vParts.size() < 2 || vParts.size() > 3)
 		{
-			sErrorMsg = "Bad arguments!\nFORMAT: solve [COUNT]";
+			sErrorMsg = "Bad arguments!\nFORMAT: solve [COUNT|avg] {AVERAGEDENSITY}";
 			return 1;
 		}
-
-		int iSamples = stoi(vParts[1]);
+		int iSamples = 0;
+		if (vParts[1] == "avg")
+		{
+			int iAvg = stoi(vParts[2]);
+			iSamples = pFractal->GetWidth() * pFractal->GetHeight() * iAvg;
+		}
+		else { iSamples = stoi(vParts[1]); }
+		
 		cout << ">> Parsed [Samples: " << iSamples << "]" << endl;
 		pFractal->Solve(iSamples);
 		return 0;
@@ -507,6 +531,14 @@ int HandleCommand(string sCommand)
 		if (vParts.size() > 5) { fDensityBlurWeight = stof(vParts[5]); }
 		if (vParts.size() > 6) { fSecondPassBlur = stof(vParts[6]); }
 		cout << ">> Parsed [Gamma: " << fGamma << "] [Brightness: " << fBrightness << "]" << endl;
+
+		fStatGamma = fGamma;
+		fStatBrightness = fBrightness;
+		iStatFilter = iFilter;
+		fStatHistWeight = fHistBlurWeight;
+		fStatDensityWeight = fDensityBlurWeight;
+		fStatSecondBlur = fSecondPassBlur;
+		
 		pFractal->Render(fGamma, fBrightness, iFilter, fHistBlurWeight, fDensityBlurWeight, fSecondPassBlur);
 		return 0;
 	}
@@ -527,6 +559,47 @@ int HandleCommand(string sCommand)
 			string sFileName = "";
 			
 			if (vParts.size() == 2) { sFileName = "./collection/" + to_string(iCollection) + "_render.png"; }
+			else if (vParts[2] == "experiment")
+			{
+				string sMkdirCommand = "mkdir -p ./render/experiments/" + to_string(iCollection);
+				system(sMkdirCommand.c_str());
+
+				string sResolution = to_string(pFractal->GetWidth()) + "x" + to_string(pFractal->GetHeight());
+				string sQuality = to_string((int)round(pFractal->GetIterations() / (pFractal->GetWidth() * pFractal->GetHeight())));
+				string sColor = pFractal->GetColorName();
+				
+				stringstream stream;
+				
+				stream << fixed << setprecision(2) << pFractal->GetZoom();
+				string sZoom = stream.str();
+				stream.str("");
+
+				stream << fixed << setprecision(1) << fStatGamma;
+				string sGamma = stream.str();
+				stream.str("");
+
+				stream << fixed << setprecision(1) << fStatBrightness;
+				string sBrightness = stream.str();
+				stream.str("");
+				
+				string sFilter = to_string(iStatFilter);
+
+				stream << fixed << setprecision(1) << fStatHistWeight;
+				string sHistWeight = stream.str();
+				stream.str("");
+				
+				stream << fixed << setprecision(1) << fStatDensityWeight;
+				string sDensityWeight = stream.str();
+				stream.str("");
+				
+				stream << fixed << setprecision(1) << fStatSecondBlur;
+				string sSecondBlur = stream.str();
+				stream.str("");
+				
+				sFileName = "./render/experiments/" + to_string(iCollection) + "/" + to_string(iCollection) + "_" + sResolution + "_q" + sQuality + "_" + sColor + "_z" + sZoom + "_g" + sGamma + "_b" + sBrightness + "_f" + sFilter;
+				if (sFilter == "1") { sFileName = sFileName + "_" + sHistWeight + "_" + sDensityWeight + "_" + sSecondBlur; }
+				sFileName = sFileName + ".png";
+			}
 			else { sFileName = vParts[2]; }
 			
 			//string sCopyCommand = "copy \"./render.png\" \"" + sFileName + "\""; // NOTE: only for windows!!

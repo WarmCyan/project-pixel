@@ -44,6 +44,8 @@ namespace dwl
 			int m_iWidth;
 			int m_iHeight;
 
+			int m_iIterations;
+
 			float m_fTempR;
 			float m_fTempG;
 			float m_fTempB;
@@ -80,6 +82,7 @@ namespace dwl
 			// COLOR RAMPS
 			vector<float>* m_vRampPoints = NULL;
 			vector<vector<float> >* m_vRampVals = NULL;
+			string m_sColorName = "";
 
 			// image data stores
 			vector<vector<vector<float> > >* m_vPoints = NULL;
@@ -126,6 +129,8 @@ namespace dwl
 			int GetWidth() { return m_iWidth; }
 			int GetHeight() { return m_iHeight; }
 
+			int GetIterations() { return m_iIterations; }
+
 			void AddFunction(FFFunction pFunction) { m_vFunctions.push_back(pFunction); }
 			void ClearFunctions() { m_vFunctions = vector<FFFunction>(); }
 			vector<FFFunction> GetFunctions() { return m_vFunctions; }
@@ -137,8 +142,11 @@ namespace dwl
 			void SetZoomX(float fZoomX) { m_fZoomX = fZoomX; }
 			void SetZoomY(float fZoomY) { m_fZoomY = fZoomY; }
 			void SetZoom(float fZoomX, float fZoomY) { m_fZoomX = fZoomX; m_fZoomY = fZoomY; }
+			float GetZoom() { return m_fZoomX; }
 
 			void SetColorRamp(vector<float> vPoints, vector<vector<float> > vValues);
+			void SetColorName(string sColorName) { m_sColorName = sColorName; }
+			string GetColorName() { return m_sColorName; }
 
 			bool IsInitialized() { return m_bInitialized; }
 			

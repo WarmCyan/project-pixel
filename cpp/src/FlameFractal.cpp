@@ -149,6 +149,9 @@ namespace dwl
 
 	void FlameFractal::PlotPoint(float fX, float fY, float fC)
 	{
+		//cout << " p."; // DEBUG
+		//cout << "Plotting point..." << endl; // DEBUG
+		
 		ColorMap(fC);
 
 		int iCoordX = (int) fX;
@@ -162,6 +165,8 @@ namespace dwl
 		(*m_vPoints)[iCoordY][iCoordX][3] += 1.0f;
 
 		// cout << "density: " << (*m_vPoints)[iCoordY][iCoordX][3] << endl; // DEBUG
+		//cout << "!"; // DEBUG
+		//cout << "Plotted point!" << endl; // DEBUG
 	}
 
 	void FlameFractal::ColorMap(float fColor)
@@ -251,7 +256,7 @@ namespace dwl
 	void FlameFractal::Solve(int iIterationCount)
 	{
 		cout << "Solving..." << endl;
-
+		m_iIterations = iIterationCount;
 
 		// choose a random starting point
 		/*float fX = RandomFloat() * 2 - 1;
@@ -303,18 +308,32 @@ namespace dwl
 		ProgressBar pBar = ProgressBar(iIterationCount, m_iProgressBarSize);
 		for (int iIteration = 0; iIteration <= iIterationCount; iIteration++)
 		{
+			//cout << "Iteration: " << iIteration << endl; // DEBUG
+
+			//cout << "\n" << iIteration;  // DEBUG
 			// choose a random function
 			float fDice = RandomFloat();
 			int iSelectedFunction = 0;
+			//cout << "Dice: " << fDice << endl; // DEBUG
 			while (fDice > (*vFunctionWeights)[iSelectedFunction]) { iSelectedFunction++; }
+			if (iSelectedFunction >= m_vFunctions.size()) { iSelectedFunction = m_vFunctions.size() - 1; } // otherwise I think it sometimes gets floating point errors and ends up way beyond the num of functions (when the dice roll is exactly 1) and this causes segmentation fault
 			(*vFunctionCounts)[iSelectedFunction]++;
+			
+			//cout << "Selected function " << iSelectedFunction << endl; // DEBUG
+
+			//cout << " 1"; // DEBUG
 
 			// run the function
 			m_vFunctions[iSelectedFunction].Run(fX, fY);
 			fX = m_vFunctions[iSelectedFunction].GetResultX();
 			fY = m_vFunctions[iSelectedFunction].GetResultY();
+			
+			//cout << "Ran function " << fX << " " << fY << endl; // DEBUG
 
-			// check for unconvergent solutions
+			//cout << " 2"; // DEBUG
+			//cout << " " << fX << "," << fY; // DEBUG
+
+			// check for divergent solutions
 			if (fY < -10000000000 || fY > 10000000000 || fY < -10000000000 || fY > 10000000000)
 			{
 				pBar.Finish();
@@ -328,14 +347,21 @@ namespace dwl
 			fX_f = m_fTempX;
 			fY_f = m_fTempY;
 
-			//cout << "Point: " << fX_f << "," << fY_f << endl; // DEBUG
+			//cout << "Final Transform " << fX_f << " " << fY_f << endl; // DEBUG
+			//cout << " 3"; // DEBUG
+			//cout << "Final transform worked" << endl; //DEBUG
+
+			//cout << " " << fX_f << "," << fY_f; // DEBUG
 
 			// run color stuff if the running function isn't a symmetry function
 			if (!m_vFunctions[iSelectedFunction].IsSymmetry())
 			{
+				//cout << "Running symmetry" << endl; // DEBUG
 				fC = (fC + m_vFunctions[iSelectedFunction].GetColor()) / 2.0f;
 				fC_f = (fC + FinalColorTransform(fC)) / 2.0f;
+				//cout << "Ran symmetry" << endl; // DEBUG
 			}
+			//cout << " 4"; // DEBUG
 
 			// store trace information
 			m_fTraceX = fX;
@@ -349,6 +375,7 @@ namespace dwl
 				if (fX_f < 0 || fX_f >= m_iWidth || fY_f < 0 || fY_f >= m_iHeight) { continue; }
 				PlotPoint(fX_f, fY_f, fC_f);
 			}
+			//cout << " 5"; // DEBUG
 
 			pBar.Update(iIteration);
 		}
@@ -590,7 +617,7 @@ namespace dwl
 		
 		cout << "Third pass... (Post processing/filtering)" << endl;
 
-		if (m_bDivergent) { cout << "WARNING - Divergent solution, skipping all post proc..." << endl; iFilterMethod = 0; }
+		//if (m_bDivergent) { cout << "WARNING - Divergent solution, skipping all post proc..." << endl; iFilterMethod = 0; }
 
 		//m_vPostProcImage = m_vImage;
 		for (int y = 0; y < m_vImage->size(); y++)
@@ -963,6 +990,8 @@ namespace dwl
 		sSaveData += to_string(m_fScalarY) + "\n";
 		sSaveData += to_string(m_fRawOffsetX) + "\n";
 		sSaveData += to_string(m_fRawOffsetY) + "\n";
+		sSaveData += m_sColorName + "\n";
+		sSaveData += to_string(m_iIterations) + "\n";
 
 		sSaveData += to_string(m_vRampPoints->size()) + "\n";
 
@@ -1016,7 +1045,8 @@ namespace dwl
 		pFile >> m_fScalarY;
 		pFile >> m_fRawOffsetX;
 		pFile >> m_fRawOffsetY;
-
+		pFile >> m_sColorName;
+		pFile >> m_iIterations;
 
 		int iColorPoints = 0;
 		pFile >> iColorPoints;
