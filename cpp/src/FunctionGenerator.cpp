@@ -37,7 +37,7 @@ namespace dwl
 		
 		while (!bValidFunction)
 		{
-			for (int i = 0; i <= 8; i++)
+			for (int i = 0; i <= 12; i++)
 			{
 				if (RandomFloat() > fDecisionThreshold)
 				{
@@ -91,7 +91,7 @@ namespace dwl
 	void FunctionGenerator::GenerateFractalFunctionSet(FlameFractal* pFractal)
 	{
 		// How many functions?
-		int iFunctionCount = RandomInt(4,10);
+		int iFunctionCount = RandomInt(4,15);
 		cout << "Choosing " << iFunctionCount << " functions..." << endl;
 
 		float fWeightSum = 0.0f;

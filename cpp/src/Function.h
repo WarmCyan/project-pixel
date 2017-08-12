@@ -1,7 +1,7 @@
 //*************************************************************
 //  File: Function.h
 //  Date created: 1/28/2017
-//  Date edited: 8/1/2017
+//  Date edited: 8/11/2017
 //  Author: Nathan Martindale
 //  Copyright © 2017 Digital Warrior Labs
 //  Description: 
@@ -39,6 +39,9 @@ namespace dwl
 			float m_fResultX;
 			float m_fResultY;
 
+			float m_fR;
+			float m_fTheta;
+
 			vector<float> m_vMatrixCoefficients;
 			vector<float> m_vVariationWeights;
 			//float* m_vMatrixCoefficients;
@@ -58,6 +61,10 @@ namespace dwl
 			void Var_Handkerchief(float fX, float fY);
 			void Var_Heart(float fX, float fY);
 			void Var_Disc(float fX, float fY);
+			void Var_Spiral(float fX, float fY);
+			void Var_Hyperbolic(float fX, float fY);
+			void Var_Diamond(float fX, float fY);
+			void Var_Ex(float fX, float fY);
 			
 		public:
 
@@ -70,6 +77,10 @@ namespace dwl
 			static const int VAR_HANDKERCHIEF = 6;
 			static const int VAR_HEART = 7;
 			static const int VAR_DISC = 8;
+			static const int VAR_SPIRAL = 9;
+			static const int VAR_HYPERBOLIC = 10;
+			static const int VAR_DIAMOND = 11;
+			static const int VAR_EX = 12;
 			
 			FFFunction();
 			void Run(float fX, float fY);

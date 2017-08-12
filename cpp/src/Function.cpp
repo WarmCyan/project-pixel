@@ -1,7 +1,7 @@
 //*************************************************************
 //  File: Function.cpp
 //  Date created: 1/28/2017
-//  Date edited: 2/8/2017
+//  Date edited: 8/11/2017
 //  Author: Nathan Martindale
 //  Copyright © 2017 Digital Warrior Labs
 //  Description: 
@@ -28,9 +28,12 @@ namespace dwl
 		m_fTempX = 0.0f;
 		m_fTempY = 0.0f;
 
+		m_fR = 0.0f;
+		m_fTheta = 0.0f;
+
 		//float aMatrixCoefficients
 		m_vMatrixCoefficients = { 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f }; // linear by default (ax + by + c, dx + ey + f)
-		m_vVariationWeights = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
+		m_vVariationWeights = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
 	}
 
 	void FFFunction::Run(float fX, float fY)
@@ -51,6 +54,9 @@ namespace dwl
 
 		float fTerm1 = m_vMatrixCoefficients[0] * fX + m_vMatrixCoefficients[1] * fY + m_vMatrixCoefficients[2];
 		float fTerm2 = m_vMatrixCoefficients[3] * fX + m_vMatrixCoefficients[4] * fY + m_vMatrixCoefficients[5];
+		
+		m_fR = Calc_R(fX, fY);
+		m_fTheta = Calc_Theta(fX, fY);
 		
 		if (m_vVariationWeights[VAR_LINEAR] > 0)
 		{
@@ -114,6 +120,34 @@ namespace dwl
 			m_fResultX += m_fTempX * m_vVariationWeights[VAR_DISC];
 			m_fResultY += m_fTempY * m_vVariationWeights[VAR_DISC];
 		}
+		
+		if (m_vVariationWeights[VAR_SPIRAL] > 0)
+		{
+			Var_Disc(fTerm1, fTerm2);
+			m_fResultX += m_fTempX * m_vVariationWeights[VAR_SPIRAL];
+			m_fResultY += m_fTempY * m_vVariationWeights[VAR_SPIRAL];
+		}
+		
+		if (m_vVariationWeights[VAR_HYPERBOLIC] > 0)
+		{
+			Var_Disc(fTerm1, fTerm2);
+			m_fResultX += m_fTempX * m_vVariationWeights[VAR_HYPERBOLIC];
+			m_fResultY += m_fTempY * m_vVariationWeights[VAR_HYPERBOLIC];
+		}
+
+		if (m_vVariationWeights[VAR_DIAMOND] > 0)
+		{
+			Var_Disc(fTerm1, fTerm2);
+			m_fResultX += m_fTempX * m_vVariationWeights[VAR_DIAMOND];
+			m_fResultY += m_fTempY * m_vVariationWeights[VAR_DIAMOND];
+		}
+
+		if (m_vVariationWeights[VAR_EX] > 0)
+		{
+			Var_Disc(fTerm1, fTerm2);
+			m_fResultX += m_fTempX * m_vVariationWeights[VAR_EX];
+			m_fResultY += m_fTempY * m_vVariationWeights[VAR_EX];
+		}
 
 		//return { fResultX, fResultY };
 	}
@@ -146,16 +180,16 @@ namespace dwl
 	}
 	void FFFunction::Var_Spherical(float fX, float fY) 
 	{
-		float fR = Calc_R(fX, fY);
-		float fCoef = 1 / (pow(fR, 2));
+		//float fR = Calc_R(fX, fY);
+		float fCoef = 1 / (pow(m_fR, 2));
 
 		m_fTempX = fX * fCoef;
 		m_fTempY = fY * fCoef;
 	}
 	void FFFunction::Var_Swirl(float fX, float fY)
 	{
-		float fR = Calc_R(fX, fY);
-		float fRSquared = pow(fR, 2);
+		//float fR = Calc_R(fX, fY);
+		float fRSquared = pow(m_fR, 2);
 		float fcosRSquared = cos(fRSquared);
 		float fsinRSquared = sin(fRSquared);
 
@@ -164,40 +198,72 @@ namespace dwl
 	}
 	void FFFunction::Var_Horseshoe(float fX, float fY)
 	{
-		float fInverseR = 1 / Calc_R(fX, fY);
+		//float fInverseR = 1 / Calc_R(fX, fY);
+		float fInverseR = 1 / m_fR;
 
 		m_fTempX = fInverseR * (fX - fY) * (fX + fY);
 		m_fTempY = fInverseR * 2 * fX * fY;
 	}
 	void FFFunction::Var_Polar(float fX, float fY)
 	{
-		m_fTempX = Calc_Theta(fX, fY) / PI;
-		m_fTempY = Calc_R(fX, fY) - 1;
+		//m_fTempX = Calc_Theta(fX, fY) / PI;
+		//m_fTempY = Calc_R(fX, fY) - 1;
+		m_fTempX = m_fTheta / PI;
+		m_fTempY = m_fR - 1;
 	}
 	void FFFunction::Var_Handkerchief(float fX, float fY)
 	{
-		float fR = Calc_R(fX, fY);
-		float fTheta = Calc_Theta(fX, fY);
+		//float fR = Calc_R(fX, fY);
+		//float fTheta = Calc_Theta(fX, fY);
 		
-		m_fTempX = fR * sin(fTheta + fR);
-		m_fTempY = fR * cos(fTheta - fR);
+		m_fTempX = m_fR * sin(m_fTheta + m_fR);
+		m_fTempY = m_fR * cos(m_fTheta - m_fR);
 	}
 	void FFFunction::Var_Heart(float fX, float fY)
 	{
-		float fR = Calc_R(fX, fY);
-		float fTheta = Calc_Theta(fX, fY);
+		//float fR = Calc_R(fX, fY);
+		//float fTheta = Calc_Theta(fX, fY);
 
-		m_fTempX = fR * sin(fR * fTheta);
-		m_fTempY = fR * -1 * cos(fR * fTheta);
+		m_fTempX = m_fR * sin(m_fR * m_fTheta);
+		m_fTempY = m_fR * -1 * cos(m_fR * m_fTheta);
 	}
-
 	void FFFunction::Var_Disc(float fX, float fY)
 	{
-		float fR = Calc_R(fX, fY);
-		float fCoef = Calc_Theta(fX, fY) / PI;
+		//float fR = Calc_R(fX, fY);
+		//float fCoef = Calc_Theta(fX, fY) / PI;
+		float fCoef = m_fTheta / PI;
 		
-		m_fTempX = fCoef * sin(PI * fR);
-		m_fTempY = fCoef * cos(PI * fR);
+		m_fTempX = fCoef * sin(PI * m_fR);
+		m_fTempY = fCoef * cos(PI * m_fR);
+	}
+	void FFFunction::Var_Spiral(float fX, float fY)
+	{
+		//float fR = Calc_R(fX, fY);
+		//float fTheta = Calc_Theta(fX, fY);
+		
+		m_fTempX = (1 / m_fR) * (cos(m_fTheta) + sin(m_fR));
+		m_fTempY = (1 / m_fR) * (sin(m_fTheta) - cos(m_fR));
+	}
+	void FFFunction::Var_Hyperbolic(float fX, float fY)
+	{
+		//float fR = Calc_R(fX, fY);
+		//float fTheta = Calc_Theta(fX, fY);
+		
+		m_fTempX = (1 / m_fR) * (cos(m_fTheta) + sin(m_fR));
+		m_fTempY = (1 / m_fR) * (sin(m_fTheta) - cos(m_fR));
+	}
+	void FFFunction::Var_Diamond(float fX, float fY)
+	{
+		m_fTempX = sin(m_fTheta) * cos(m_fR);;
+		m_fTempY = cos(m_fTheta) * sin(m_fR);
+	}
+	void FFFunction::Var_Ex(float fX, float fY)
+	{
+		float fP0 = sin(m_fTheta + m_fR);
+		float fP1 = cos(m_fTheta - m_fR);
+			
+		m_fTempX = m_fR * (pow(fP0, 3) + pow(fP1, 3));
+		m_fTempY = m_fR * (pow(fP0, 3) - pow(fP1, 3));
 	}
 
 	string FFFunction::FunctionInfo()
