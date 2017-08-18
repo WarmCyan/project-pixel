@@ -1,7 +1,7 @@
 //*************************************************************
 //  File: Generator.cpp
 //  Date created: 1/28/2017
-//  Date edited: 8/10/2017
+//  Date edited: 8/16/2017
 //  Author: Nathan Martindale
 //  Copyright © 2017 Digital Warrior Labs
 //  Description: 
@@ -625,6 +625,23 @@ int HandleCommand(string sCommand)
 			string sFileName = "";
 
 			if (vParts.size() == 2) { sFileName = "./collection/" + to_string(iCollection); }
+			else if (vParts[2] == "experiment")
+			{
+				string sMkdirCommand = "mkdir -p ./render/experiments/" + to_string(iCollection);
+				system(sMkdirCommand.c_str());
+
+				string sResolution = to_string(pFractal->GetWidth()) + "x" + to_string(pFractal->GetHeight());
+				string sQuality = to_string((int)round(pFractal->GetIterations() / (pFractal->GetWidth() * pFractal->GetHeight())));
+				string sColor = pFractal->GetColorName();
+				
+				stringstream stream;
+				
+				stream << fixed << setprecision(2) << pFractal->GetZoom();
+				string sZoom = stream.str();
+				stream.str("");
+
+				sFileName = "./render/experiments/" + to_string(iCollection) + "/" + to_string(iCollection) + "_" + sResolution + "_q" + sQuality + "_" + sColor + "_z" + sZoom;
+			}
 			else { sFileName = vParts[2]; }
 
 			pFractal->SaveImageTrace(sFileName);

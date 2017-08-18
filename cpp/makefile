@@ -26,6 +26,12 @@ re: clean all
 
 rerun: clean run
 
+debug: setdebug clean $(TARGET)
+	@gdb $(BINDIR)/$(TARGET) -tui
+
+setdebug:
+	$(eval CC=g++ -ggdb)
+
 # link
 $(TARGET): $(OBJECTS)
 	@echo "Compiling complete"
@@ -48,4 +54,4 @@ clean:
 	@-rm $(BINDIR)/$(TARGET)
 	@echo -e "Cleaning complete"
 
-.PHONY: clean all run re rerun
+.PHONY: clean all run re rerun debug setdebug
