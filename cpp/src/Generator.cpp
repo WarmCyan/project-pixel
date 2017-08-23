@@ -1,7 +1,7 @@
 //*************************************************************
 //  File: Generator.cpp
 //  Date created: 1/28/2017
-//  Date edited: 8/16/2017
+//  Date edited: 8/23/2017
 //  Author: Nathan Martindale
 //  Copyright © 2017 Digital Warrior Labs
 //  Description: 
@@ -559,9 +559,11 @@ int HandleCommand(string sCommand)
 			string sFileName = "";
 			
 			if (vParts.size() == 2) { sFileName = "./collection/" + to_string(iCollection) + "_render.png"; }
-			else if (vParts[2] == "experiment")
+			else if (vParts[2] == "experiment" || vParts[2] == "official")
 			{
-				string sMkdirCommand = "mkdir -p ./render/experiments/" + to_string(iCollection);
+				string sMkdirCommand = "";
+				if (vParts[2] == "experiment") { sMkdirCommand = "mkdir -p ./render/experiments/" + to_string(iCollection); }
+				else { sMkdirCommand = "mkdir -p ./render/official"; }
 				system(sMkdirCommand.c_str());
 
 				string sResolution = to_string(pFractal->GetWidth()) + "x" + to_string(pFractal->GetHeight());
@@ -596,7 +598,8 @@ int HandleCommand(string sCommand)
 				string sSecondBlur = stream.str();
 				stream.str("");
 				
-				sFileName = "./render/experiments/" + to_string(iCollection) + "/" + to_string(iCollection) + "_" + sResolution + "_q" + sQuality + "_" + sColor + "_z" + sZoom + "_g" + sGamma + "_b" + sBrightness + "_f" + sFilter;
+				if (vParts[2] == "experiment") { sFileName = "./render/experiments/" + to_string(iCollection) + "/" + to_string(iCollection) + "_" + sResolution + "_q" + sQuality + "_" + sColor + "_z" + sZoom + "_g" + sGamma + "_b" + sBrightness + "_f" + sFilter; }
+				else { sFileName = "./render/official/" + to_string(iCollection) + "_" + sResolution + "_q" + sQuality + "_" + sColor + "_z" + sZoom + "_g" + sGamma + "_b" + sBrightness + "_f" + sFilter; }
 				if (sFilter == "1") { sFileName = sFileName + "_" + sHistWeight + "_" + sDensityWeight + "_" + sSecondBlur; }
 				sFileName = sFileName + ".png";
 			}

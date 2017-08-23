@@ -1,5 +1,5 @@
 # compiler 
-CC=g++
+CC=g++ -std=c++0x
 
 # output name
 TARGET=FlameFractalEngine
