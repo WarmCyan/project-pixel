@@ -266,7 +266,7 @@ int HandleCommand(string sCommand)
 	else if (vParts[0] == "PAUSE") { bPaused = true; return 3; }
 	else if (vParts[0] == "help")
 	{
-		cout << "exit {rolling}\necho [MESSAGE]\ncollection [INDEX|increment]\nrun [SCRIPT|rolling]\ncreate [WIDTH] [HEIGHT]\nzoom [X] [Y]\ncolor [blue|green|ttu|purple|purpleblue|orange|yellow|red|portal]\ninit\nsolve [COUNT|avg] {AVGDENSITY}\nrender [GAMMA] [BRIGHTNESS] {FILTERNUM} {HISTBLURWEIGHT=1} {DENSITYBLURWEIGHT=1} {SECONDPASSBLUR=.2}\ngenerate\nsave [image|functions|trace|collection] {FILE}\nload [functions|trace] [FILE]" << endl;
+		cout << "exit {rolling}\necho [MESSAGE]\ncollection [INDEX|increment]\nrun [SCRIPT|rolling]\ncreate [WIDTH] [HEIGHT]\nzoom [X] [Y]\ncolor [blue|green|ttu|purple|purpleblue|orange|yellow|red|portal]\ninit\nsolve [COUNT|avg] {AVGDENSITY}\nrender [GAMMA] [BRIGHTNESS] {FILTERNUM} {HISTBLURWEIGHT=1} {DENSITYBLURWEIGHT=1} {SECONDPASSBLUR=.2}\ngenerate\nsave [image|functions|trace|collection] {FILE}\nload [functions|trace] [FILE]\nproduce [experiment|client|official|personal] [COLLECTION] [WIDTH] [HEIGHT] [QUALITY] [COLOR] [ZOOM] [GAMMA] [BRIGHTNESS] {FILTERNUM} {HISTBLURWEIGHT} {DENSITYBLURWEIGHT} {SECONDPASSBLUR}" << endl;
 		return 0;
 	}
 	else if (vParts[0] == "run")
@@ -559,11 +559,13 @@ int HandleCommand(string sCommand)
 			string sFileName = "";
 			
 			if (vParts.size() == 2) { sFileName = "./collection/" + to_string(iCollection) + "_render.png"; }
-			else if (vParts[2] == "experiment" || vParts[2] == "official")
+			else if (vParts[2] == "experiment" || vParts[2] == "official" || vParts[2] == "personal" || vParts[2] == "client")
 			{
 				string sMkdirCommand = "";
 				if (vParts[2] == "experiment") { sMkdirCommand = "mkdir -p ./render/experiments/" + to_string(iCollection); }
-				else { sMkdirCommand = "mkdir -p ./render/official"; }
+				else if (vParts[2] == "personal") { sMkdirCommand = "mkdir -p ./render/personal/" + to_string(iCollection); }
+				else if (vParts[2] ==  "client") { sMkdirCommand = "mkdir -p ./render/client/" + to_string(iCollection); }
+				else { sMkdirCommand = "mkdir -p ./render/official/" + to_string(iCollection); }
 				system(sMkdirCommand.c_str());
 
 				string sResolution = to_string(pFractal->GetWidth()) + "x" + to_string(pFractal->GetHeight());
@@ -599,7 +601,10 @@ int HandleCommand(string sCommand)
 				stream.str("");
 				
 				if (vParts[2] == "experiment") { sFileName = "./render/experiments/" + to_string(iCollection) + "/" + to_string(iCollection) + "_" + sResolution + "_q" + sQuality + "_" + sColor + "_z" + sZoom + "_g" + sGamma + "_b" + sBrightness + "_f" + sFilter; }
-				else { sFileName = "./render/official/" + to_string(iCollection) + "_" + sResolution + "_q" + sQuality + "_" + sColor + "_z" + sZoom + "_g" + sGamma + "_b" + sBrightness + "_f" + sFilter; }
+				else if (vParts[2] == "personal") { sFileName = "./render/personal/" + to_string(iCollection) + "/" + to_string(iCollection) + "_" + sResolution + "_q" + sQuality + "_" + sColor + "_z" + sZoom + "_g" + sGamma + "_b" + sBrightness + "_f" + sFilter; }
+				else if (vParts[2] == "client") { sFileName = "./render/client/" + to_string(iCollection) + "/" + to_string(iCollection) + "_" + sResolution + "_q" + sQuality + "_" + sColor + "_z" + sZoom + "_g" + sGamma + "_b" + sBrightness + "_f" + sFilter; }
+				else { sFileName = "./render/official/" + to_string(iCollection) + "/" + to_string(iCollection) + "_" + sResolution + "_q" + sQuality + "_" + sColor + "_z" + sZoom + "_g" + sGamma + "_b" + sBrightness + "_f" + sFilter; }
+				
 				if (sFilter == "1") { sFileName = sFileName + "_" + sHistWeight + "_" + sDensityWeight + "_" + sSecondBlur; }
 				sFileName = sFileName + ".png";
 			}
@@ -653,12 +658,42 @@ int HandleCommand(string sCommand)
 		else if (vParts[1] == "collection") { StoreCollectionNum(); return 0; }
 	}
 
+	// DA MACRO!
+	else if (vParts[0] == "produce")
+	{
+		if (vParts.size() < 10)
+		{
+			sErrorMsg = "Bad arguments!\nFORMAT: produce [experiment|client|official|personal] [COLLECTION] [WIDTH] [HEIGHT] [QUALITY] [COLOR] [ZOOM] [GAMMA] [BRIGHTNESS] {FILTERNUM} {HISTBLURWEIGHT} {DENSITYBLURWEIGHT} {SECONDPASSBLUR}";
+			return 1;
+		}
+
+		string sEcho = "echo Running " + vParts[1] + " render of fractal " + vParts[2] + "... \\n " + vParts[3] + "x" + vParts[4] + " \\n Zoom: " + vParts[7] + " \\n Color: " + vParts[6] + " \\n Quality: " + vParts[5] + " \\n Gamma: " + vParts[8] + " \\n Brightness: " + vParts[9];
+		if (vParts.size() == 10) { sEcho += " \\n (no blur)"; }
+		else { sEcho += " \\n (blur)"; }
+		HandleCommand(sEcho);
+
+		HandleCommand("collection " + vParts[2]);
+		HandleCommand("create " + vParts[3] + " " + vParts[4]);
+		HandleCommand("zoom " + vParts[7] + " " + vParts[7]);
+		HandleCommand("color " + vParts[6]);
+		HandleCommand("init");
+		HandleCommand("load functions");
+		HandleCommand("solve avg " + vParts[5]);
+		
+		if (vParts.size() == 10) { HandleCommand("render " + vParts[8] + " " + vParts[9] + " " + vParts[10]); }
+		else { HandleCommand("render " + vParts[8] + " " + vParts[9] + " " + vParts[10] + " " + vParts[11] + " " + vParts[12] + " " + vParts[13] + " " + vParts[14]); }
+
+		HandleCommand("save image " + vParts[1]);
+		return 0;
+	}
+
 	else if (vParts[0] == "echo") // for debugging use!
 	{
 		cout << endl << "========================================" << endl << endl;
 		for (int i = 1; i < vParts.size(); i++)
 		{
-			cout << vParts[i] << " ";
+			if (vParts[i] == "\\n") { cout << endl; }
+			else { cout << vParts[i] << " "; }
 		}
 		cout << endl << endl << "========================================" << endl << endl;
 		return 0;
