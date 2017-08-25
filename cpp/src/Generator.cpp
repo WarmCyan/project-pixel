@@ -1,7 +1,7 @@
 //*************************************************************
 //  File: Generator.cpp
 //  Date created: 1/28/2017
-//  Date edited: 8/23/2017
+//  Date edited: 8/24/2017
 //  Author: Nathan Martindale
 //  Copyright © 2017 Digital Warrior Labs
 //  Description: 
@@ -266,7 +266,7 @@ int HandleCommand(string sCommand)
 	else if (vParts[0] == "PAUSE") { bPaused = true; return 3; }
 	else if (vParts[0] == "help")
 	{
-		cout << "exit {rolling}\necho [MESSAGE]\ncollection [INDEX|increment]\nrun [SCRIPT|rolling]\ncreate [WIDTH] [HEIGHT]\nzoom [X] [Y]\ncolor [blue|green|ttu|purple|purpleblue|orange|yellow|red|portal]\ninit\nsolve [COUNT|avg] {AVGDENSITY}\nrender [GAMMA] [BRIGHTNESS] {FILTERNUM} {HISTBLURWEIGHT=1} {DENSITYBLURWEIGHT=1} {SECONDPASSBLUR=.2}\ngenerate\nsave [image|functions|trace|collection] {FILE}\nload [functions|trace] [FILE]\nproduce [experiment|client|official|personal] [COLLECTION] [WIDTH] [HEIGHT] [QUALITY] [COLOR] [ZOOM] [GAMMA] [BRIGHTNESS] {FILTERNUM} {HISTBLURWEIGHT} {DENSITYBLURWEIGHT} {SECONDPASSBLUR}" << endl;
+		cout << "exit {rolling}\necho [MESSAGE]\ncollection [INDEX|increment]\nrun [SCRIPT|rolling]\ncreate [WIDTH] [HEIGHT]\nzoom [X] [Y]\ncolor [blue|green|ttu|purple|purpleblue|orange|yellow|red|portal]\ninit\nsolve [COUNT|avg] {AVGDENSITY}\nrender [GAMMA] [BRIGHTNESS] {FILTERNUM} {HISTBLURWEIGHT=1} {DENSITYBLURWEIGHT=1} {SECONDPASSBLUR=.2}\ngenerate\nsave [image|functions|trace|collection] {FILE}\nload [functions|trace] [FILE]\nproduce [experiment|client|official|personal] [COLLECTION|current] [WIDTH] [HEIGHT] [QUALITY] [COLOR] [ZOOM] [GAMMA] [BRIGHTNESS] {FILTERNUM} {HISTBLURWEIGHT} {DENSITYBLURWEIGHT} {SECONDPASSBLUR}" << endl;
 		return 0;
 	}
 	else if (vParts[0] == "run")
@@ -425,6 +425,12 @@ int HandleCommand(string sCommand)
 		{
 			pFractal->SetColorRamp({0.0f, 0.5f, 1.0f}, {{1.0f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.5f, 1.0f}});
 			pFractal->SetColorName("portal");
+			bFound = true;
+		}
+		else if (vParts[1] == "teal")
+		{
+			pFractal->SetColorRamp({0.0f, 1.0f}, {{1.0f, 1.0f, 1.0f}, {0.25f, 0.75f, 0.7f}});
+			pFractal->SetColorName("teal");
 			bFound = true;
 		}
 
@@ -663,9 +669,12 @@ int HandleCommand(string sCommand)
 	{
 		if (vParts.size() < 10)
 		{
-			sErrorMsg = "Bad arguments!\nFORMAT: produce [experiment|client|official|personal] [COLLECTION] [WIDTH] [HEIGHT] [QUALITY] [COLOR] [ZOOM] [GAMMA] [BRIGHTNESS] {FILTERNUM} {HISTBLURWEIGHT} {DENSITYBLURWEIGHT} {SECONDPASSBLUR}";
+			sErrorMsg = "Bad arguments!\nFORMAT: produce [experiment|client|official|personal] [COLLECTION|current] [WIDTH] [HEIGHT] [QUALITY] [COLOR] [ZOOM] [GAMMA] [BRIGHTNESS] {FILTERNUM} {HISTBLURWEIGHT} {DENSITYBLURWEIGHT} {SECONDPASSBLUR}";
 			return 1;
 		}
+		HandleCommand("create 0 0");
+		
+		if (vParts[2] == "current") { vParts[2] = to_string(iCollection); }
 
 		string sEcho = "echo Running " + vParts[1] + " render of fractal " + vParts[2] + "... \\n " + vParts[3] + "x" + vParts[4] + " \\n Zoom: " + vParts[7] + " \\n Color: " + vParts[6] + " \\n Quality: " + vParts[5] + " \\n Gamma: " + vParts[8] + " \\n Brightness: " + vParts[9];
 		if (vParts.size() == 10) { sEcho += " \\n (no blur)"; }
@@ -680,7 +689,8 @@ int HandleCommand(string sCommand)
 		HandleCommand("load functions");
 		HandleCommand("solve avg " + vParts[5]);
 		
-		if (vParts.size() == 10) { HandleCommand("render " + vParts[8] + " " + vParts[9] + " " + vParts[10]); }
+		//if (vParts.size() == 10) { HandleCommand("render " + vParts[8] + " " + vParts[9] + " " + vParts[10]); }
+		if (vParts.size() == 10) { HandleCommand("render " + vParts[8] + " " + vParts[9]); }
 		else { HandleCommand("render " + vParts[8] + " " + vParts[9] + " " + vParts[10] + " " + vParts[11] + " " + vParts[12] + " " + vParts[13] + " " + vParts[14]); }
 
 		HandleCommand("save image " + vParts[1]);
