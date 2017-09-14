@@ -1,7 +1,7 @@
 //*************************************************************
 //  File: Generator.cpp
 //  Date created: 1/28/2017
-//  Date edited: 8/24/2017
+//  Date edited: 9/12/2017
 //  Author: Nathan Martindale
 //  Copyright © 2017 Digital Warrior Labs
 //  Description: 
@@ -691,7 +691,8 @@ int HandleCommand(string sCommand)
 		
 		//if (vParts.size() == 10) { HandleCommand("render " + vParts[8] + " " + vParts[9] + " " + vParts[10]); }
 		if (vParts.size() == 10) { HandleCommand("render " + vParts[8] + " " + vParts[9]); }
-		else { HandleCommand("render " + vParts[8] + " " + vParts[9] + " " + vParts[10] + " " + vParts[11] + " " + vParts[12] + " " + vParts[13] + " " + vParts[14]); }
+		//else { HandleCommand("render " + vParts[8] + " " + vParts[9] + " " + vParts[10] + " " + vParts[11] + " " + vParts[12] + " " + vParts[13] + " " + vParts[14]); }
+		else { HandleCommand("render " + vParts[8] + " " + vParts[9] + " " + vParts[10] + " " + vParts[11] + " " + vParts[12] + " " + vParts[13]); }
 
 		HandleCommand("save image " + vParts[1]);
 		return 0;
