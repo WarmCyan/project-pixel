@@ -1,7 +1,7 @@
 //*************************************************************
 //  File: Generator.cpp
 //  Date created: 1/28/2017
-//  Date edited: 9/12/2017
+//  Date edited: 9/14/2017
 //  Author: Nathan Martindale
 //  Copyright © 2017 Digital Warrior Labs
 //  Description: 
@@ -266,14 +266,14 @@ int HandleCommand(string sCommand)
 	else if (vParts[0] == "PAUSE") { bPaused = true; return 3; }
 	else if (vParts[0] == "help")
 	{
-		cout << "exit {rolling}\necho [MESSAGE]\ncollection [INDEX|increment]\nrun [SCRIPT|rolling]\ncreate [WIDTH] [HEIGHT]\nzoom [X] [Y]\ncolor [blue|green|ttu|purple|purpleblue|orange|yellow|red|portal]\ninit\nsolve [COUNT|avg] {AVGDENSITY}\nrender [GAMMA] [BRIGHTNESS] {FILTERNUM} {HISTBLURWEIGHT=1} {DENSITYBLURWEIGHT=1} {SECONDPASSBLUR=.2}\ngenerate\nsave [image|functions|trace|collection] {FILE}\nload [functions|trace] [FILE]\nproduce [experiment|client|official|personal] [COLLECTION|current] [WIDTH] [HEIGHT] [QUALITY] [COLOR] [ZOOM] [GAMMA] [BRIGHTNESS] {FILTERNUM} {HISTBLURWEIGHT} {DENSITYBLURWEIGHT} {SECONDPASSBLUR}" << endl;
+		cout << "exit {rolling}\necho [MESSAGE]\ncollection [INDEX|increment]\nrun [SCRIPT|rolling] {ARGS}\ncreate [WIDTH] [HEIGHT]\nzoom [X] [Y]\ncolor [blue|green|ttu|purple|purpleblue|orange|yellow|red|portal]\ninit\nsolve [COUNT|avg] {AVGDENSITY}\nrender [GAMMA] [BRIGHTNESS] {FILTERNUM} {HISTBLURWEIGHT=1} {DENSITYBLURWEIGHT=1} {SECONDPASSBLUR=.2}\ngenerate\nsave [image|functions|trace|collection] {FILE}\nload [functions|trace] [FILE]\nproduce [experiment|client|official|personal] [COLLECTION|current] [WIDTH] [HEIGHT] [QUALITY] [COLOR] [ZOOM] [GAMMA] [BRIGHTNESS] {FILTERNUM} {HISTBLURWEIGHT} {DENSITYBLURWEIGHT} {SECONDPASSBLUR}" << endl;
 		return 0;
 	}
 	else if (vParts[0] == "run")
 	{
-		if (vParts.size() != 2)
+		if (vParts.size() < 2)
 		{
-			sErrorMsg = "Bad arguments!nFORMAT: run [SCRIPT]";
+			sErrorMsg = "Bad arguments!nFORMAT: run [SCRIPT] {ARGS}";
 			return 1;
 		}
 
@@ -295,8 +295,22 @@ int HandleCommand(string sCommand)
 		while (!pFile.eof())
 		{
 			string sLine;
-			//pFile >> sLine;
 			getline(pFile, sLine);
+
+			// replace any $# with the respective argument (if it exists)
+			for (int i = 2; i < vParts.size(); i++)
+			{
+				int iArgNum = i - 2;
+				string sSearch = "$" + to_string(iArgNum);
+				cout << "Searching for " << sSearch << "..." << endl;
+				
+				size_t cSearchResults = sLine.find(sSearch);
+				while (cSearchResults != string::npos)
+				{
+					sLine.replace(cSearchResults, sSearch.length(), vParts[i]);
+					cSearchResults = sLine.find(sSearch);
+				}
+			}
 
 			int iResult = HandleCommand(sLine);
 			if (iResult == 1) { pFile.close(); return 1; }
