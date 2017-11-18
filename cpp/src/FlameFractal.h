@@ -1,7 +1,7 @@
 //*************************************************************
 //  File: FlameFractal.h
 //  Date created: 1/28/2017
-//  Date edited: 8/11/2017
+//  Date edited: 11/18/2017
 //  Author: Nathan Martindale
 //  Copyright © 2017 Digital Warrior Labs
 //  Description: 
@@ -44,7 +44,8 @@ namespace dwl
 			int m_iWidth;
 			int m_iHeight;
 
-			int m_iIterations;
+			//int m_iIterations;
+			long int m_iIterations;
 
 			float m_fTempR;
 			float m_fTempG;
@@ -129,7 +130,8 @@ namespace dwl
 			int GetWidth() { return m_iWidth; }
 			int GetHeight() { return m_iHeight; }
 
-			int GetIterations() { return m_iIterations; }
+			//int GetIterations() { return m_iIterations; }
+			long GetIterations() { return m_iIterations; }
 
 			void AddFunction(FFFunction pFunction) { m_vFunctions.push_back(pFunction); }
 			void ClearFunctions() { m_vFunctions = vector<FFFunction>(); }
@@ -153,7 +155,8 @@ namespace dwl
 			void PreparePlot();
 			void SetBaseImage(float fR, float fG, float fB, float fA);
 			void InitializeSolution();
-			void Solve(int iIterationCount);
+			//void Solve(int iIterationCount);
+			void Solve(long int iIterationCount);
 			void Render(float fGamma, float fBrightness, int iFilterMethod, float fHistBlurWeight, float fDensityBlurWeight, float fSecondPassBlur);
 
 			// TODO: don't forget, store functions as well!

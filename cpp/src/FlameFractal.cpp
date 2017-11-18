@@ -253,7 +253,8 @@ namespace dwl
 		m_bInitialized = true;
 	}
 
-	void FlameFractal::Solve(int iIterationCount)
+	//void FlameFractal::Solve(int iIterationCount)
+	void FlameFractal::Solve(long int iIterationCount)
 	{
 		cout << "Solving..." << endl;
 		m_iIterations = iIterationCount;
@@ -305,8 +306,8 @@ namespace dwl
 		cout << "]" << endl;
 
 		// run the chaos game!
-		ProgressBar pBar = ProgressBar(iIterationCount, m_iProgressBarSize);
-		for (int iIteration = 0; iIteration <= iIterationCount; iIteration++)
+		ProgressBar pBar = ProgressBar((iIterationCount / 1000), m_iProgressBarSize); // dividing by 1000 so progress bar doesn't freak out with large int
+		for (long int iIteration = 0; iIteration <= iIterationCount; iIteration++)
 		{
 			//cout << "Iteration: " << iIteration << endl; // DEBUG
 
@@ -377,7 +378,7 @@ namespace dwl
 			}
 			//cout << " 5"; // DEBUG
 
-			pBar.Update(iIteration);
+			pBar.Update((iIteration / 1000));
 		}
 		pBar.Finish();
 

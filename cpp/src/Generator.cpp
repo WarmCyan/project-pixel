@@ -505,11 +505,12 @@ int HandleCommand(string sCommand)
 			sErrorMsg = "Bad arguments!\nFORMAT: solve [COUNT|avg] {AVERAGEDENSITY}";
 			return 1;
 		}
-		int iSamples = 0;
+		//int iSamples = 0;
+		long iSamples = 0;
 		if (vParts[1] == "avg")
 		{
 			int iAvg = stoi(vParts[2]);
-			iSamples = pFractal->GetWidth() * pFractal->GetHeight() * iAvg;
+			iSamples = (long int)(pFractal->GetWidth() * pFractal->GetHeight()) * (long int)(iAvg);
 		}
 		else { iSamples = stoi(vParts[1]); }
 		
