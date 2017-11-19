@@ -904,165 +904,168 @@ namespace dwl
 		cout << "Fifth pass... (Noise removal)" << endl;
 
 		// check for lone speckles
-
-		for (int y = 0; y < m_vPostProcImage->size(); y++)
+		for (int i = 0; i < 5; i++)
 		{
-			for (int x = 0; x < (*m_vPostProcImage)[y].size(); x++)
+
+			for (int y = 0; y < m_vPostProcImage->size(); y++)
 			{
-				(*m_vImage)[y][x][0] = (*m_vPostProcImage)[y][x][0];
-				(*m_vImage)[y][x][1] = (*m_vPostProcImage)[y][x][1];
-				(*m_vImage)[y][x][2] = (*m_vPostProcImage)[y][x][2];
-				(*m_vImage)[y][x][3] = (*m_vPostProcImage)[y][x][3];
-			}
-		}			
-		
-		ProgressBar pBar5 = ProgressBar(m_vImage->size() - 1, m_iProgressBarSize);
-		for (int y = 1; y < m_vPostProcImage->size() - 1; y++)
-		{
-			pBar5.Update(y);
-			//cout << "row " << y << endl;
-			for (int x = 1; x < (*m_vPostProcImage)[y].size() - 1; x++)
-			{
-				float fR = (*m_vImage)[y][x][0];
-				float fG = (*m_vImage)[y][x][1];
-				float fB = (*m_vImage)[y][x][2];
-				//float fDensity = (*m_vPoints)[y][x][3];
-				//float n = fDensity;
-				//if (n < 1) { n = 1; }
-
-				float fSum = fR + fG + fB;
-				float fRatio = (fSum * 3) / 4;
-				//bool noise = true;
-				int noise = 2;
-
-				float fRAvg = 0.0f;
-				float fBAvg = 0.0f;
-				float fGAvg = 0.0f;
-
-				// upper left
-				float fR1 = (*m_vImage)[y-1][x-1][0];
-				float fG1 = (*m_vImage)[y-1][x-1][1];
-				float fB1 = (*m_vImage)[y-1][x-1][2];
-
-				float fSum1 = fR1 + fG1 + fB1;
-				fRAvg += fR1;
-				fGAvg += fG1;
-				fBAvg += fB1;
-
-				if (fSum1 > (fRatio)) { noise--; }
-				
-				// upper middle
-				fR1 = (*m_vImage)[y-1][x][0];
-				fG1 = (*m_vImage)[y-1][x][1];
-				fB1 = (*m_vImage)[y-1][x][2];
-
-				fSum1 = fR1 + fG1 + fB1;
-				fRAvg += fR1;
-				fGAvg += fG1;
-				fBAvg += fB1;
-
-				if (fSum1 > (fRatio)) { noise--; }
-				
-				// upper right
-				fR1 = (*m_vImage)[y-1][x+1][0];
-				fG1 = (*m_vImage)[y-1][x+1][1];
-				fB1 = (*m_vImage)[y-1][x+1][2];
-
-				fSum1 = fR1 + fG1 + fB1;
-				fRAvg += fR1;
-				fGAvg += fG1;
-				fBAvg += fB1;
-
-				if (fSum1 > (fRatio)) { noise--; }
-				
-				// middle left
-				fR1 = (*m_vImage)[y][x-1][0];
-				fG1 = (*m_vImage)[y][x-1][1];
-				fB1 = (*m_vImage)[y][x-1][2];
-
-				fSum1 = fR1 + fG1 + fB1;
-				fRAvg += fR1;
-				fGAvg += fG1;
-				fBAvg += fB1;
-
-				if (fSum1 > (fRatio)) { noise--; }
-				
-				// middle right
-				fR1 = (*m_vImage)[y][x+1][0];
-				fG1 = (*m_vImage)[y][x+1][1];
-				fB1 = (*m_vImage)[y][x+1][2];
-
-				fSum1 = fR1 + fG1 + fB1;
-				fRAvg += fR1;
-				fGAvg += fG1;
-				fBAvg += fB1;
-
-				if (fSum1 > (fRatio)) { noise--; }
-				
-				// lower left
-				fR1 = (*m_vImage)[y+1][x-1][0];
-				fG1 = (*m_vImage)[y+1][x-1][1];
-				fB1 = (*m_vImage)[y+1][x-1][2];
-
-				fSum1 = fR1 + fG1 + fB1;
-				fRAvg += fR1;
-				fGAvg += fG1;
-				fBAvg += fB1;
-
-				if (fSum1 > (fRatio)) { noise--; }
-				
-				// lower middle
-				fR1 = (*m_vImage)[y+1][x][0];
-				fG1 = (*m_vImage)[y+1][x][1];
-				fB1 = (*m_vImage)[y+1][x][2];
-
-				fSum1 = fR1 + fG1 + fB1;
-				fRAvg += fR1;
-				fGAvg += fG1;
-				fBAvg += fB1;
-
-				if (fSum1 > (fRatio)) { noise--; }
-				
-				// lower right
-				fR1 = (*m_vImage)[y+1][x+1][0];
-				fG1 = (*m_vImage)[y+1][x+1][1];
-				fB1 = (*m_vImage)[y+1][x+1][2];
-
-				fSum1 = fR1 + fG1 + fB1;
-				fRAvg += fR1;
-				fGAvg += fG1;
-				fBAvg += fB1;
-
-				if (fSum1 > (fRatio)) { noise--; }
-
-				if (noise < 0) { continue; } // TODO: should be <=
-
-				fRAvg /= 8;
-				fGAvg /= 8;
-				fBAvg /= 8;
-
-				if (noise == 2)
+				for (int x = 0; x < (*m_vPostProcImage)[y].size(); x++)
 				{
-					(*m_vPostProcImage)[y][x][0] = fR*.20 + fRAvg*.80;
-					(*m_vPostProcImage)[y][x][1] = fG*.20 + fGAvg*.80;
-					(*m_vPostProcImage)[y][x][2] = fB*.20 + fBAvg*.80;
+					(*m_vImage)[y][x][0] = (*m_vPostProcImage)[y][x][0];
+					(*m_vImage)[y][x][1] = (*m_vPostProcImage)[y][x][1];
+					(*m_vImage)[y][x][2] = (*m_vPostProcImage)[y][x][2];
+					(*m_vImage)[y][x][3] = (*m_vPostProcImage)[y][x][3];
 				}
-				else if (noise == 1)
-				{
-					(*m_vPostProcImage)[y][x][0] = fR*.4 + fRAvg*.6;
-					(*m_vPostProcImage)[y][x][1] = fG*.4 + fGAvg*.6;
-					(*m_vPostProcImage)[y][x][2] = fB*.4 + fBAvg*.6;
-				}
-				else if (noise == 0)
-				{
-					(*m_vPostProcImage)[y][x][0] = fR*.7 + fRAvg*.3;
-					(*m_vPostProcImage)[y][x][1] = fG*.7 + fGAvg*.3;
-					(*m_vPostProcImage)[y][x][2] = fB*.7 + fBAvg*.3;
-				}
-			}
+			}			
 			
+			ProgressBar pBar5 = ProgressBar(m_vImage->size() - 1, m_iProgressBarSize);
+			for (int y = 1; y < m_vPostProcImage->size() - 1; y++)
+			{
+				pBar5.Update(y);
+				//cout << "row " << y << endl;
+				for (int x = 1; x < (*m_vPostProcImage)[y].size() - 1; x++)
+				{
+					float fR = (*m_vImage)[y][x][0];
+					float fG = (*m_vImage)[y][x][1];
+					float fB = (*m_vImage)[y][x][2];
+					//float fDensity = (*m_vPoints)[y][x][3];
+					//float n = fDensity;
+					//if (n < 1) { n = 1; }
+
+					float fSum = fR + fG + fB;
+					float fRatio = (fSum * 3) / 4;
+					//bool noise = true;
+					int noise = 2;
+
+					float fRAvg = 0.0f;
+					float fBAvg = 0.0f;
+					float fGAvg = 0.0f;
+
+					// upper left
+					float fR1 = (*m_vImage)[y-1][x-1][0];
+					float fG1 = (*m_vImage)[y-1][x-1][1];
+					float fB1 = (*m_vImage)[y-1][x-1][2];
+
+					float fSum1 = fR1 + fG1 + fB1;
+					fRAvg += fR1;
+					fGAvg += fG1;
+					fBAvg += fB1;
+
+					if (fSum1 > (fRatio)) { noise--; }
+					
+					// upper middle
+					fR1 = (*m_vImage)[y-1][x][0];
+					fG1 = (*m_vImage)[y-1][x][1];
+					fB1 = (*m_vImage)[y-1][x][2];
+
+					fSum1 = fR1 + fG1 + fB1;
+					fRAvg += fR1;
+					fGAvg += fG1;
+					fBAvg += fB1;
+
+					if (fSum1 > (fRatio)) { noise--; }
+					
+					// upper right
+					fR1 = (*m_vImage)[y-1][x+1][0];
+					fG1 = (*m_vImage)[y-1][x+1][1];
+					fB1 = (*m_vImage)[y-1][x+1][2];
+
+					fSum1 = fR1 + fG1 + fB1;
+					fRAvg += fR1;
+					fGAvg += fG1;
+					fBAvg += fB1;
+
+					if (fSum1 > (fRatio)) { noise--; }
+					
+					// middle left
+					fR1 = (*m_vImage)[y][x-1][0];
+					fG1 = (*m_vImage)[y][x-1][1];
+					fB1 = (*m_vImage)[y][x-1][2];
+
+					fSum1 = fR1 + fG1 + fB1;
+					fRAvg += fR1;
+					fGAvg += fG1;
+					fBAvg += fB1;
+
+					if (fSum1 > (fRatio)) { noise--; }
+					
+					// middle right
+					fR1 = (*m_vImage)[y][x+1][0];
+					fG1 = (*m_vImage)[y][x+1][1];
+					fB1 = (*m_vImage)[y][x+1][2];
+
+					fSum1 = fR1 + fG1 + fB1;
+					fRAvg += fR1;
+					fGAvg += fG1;
+					fBAvg += fB1;
+
+					if (fSum1 > (fRatio)) { noise--; }
+					
+					// lower left
+					fR1 = (*m_vImage)[y+1][x-1][0];
+					fG1 = (*m_vImage)[y+1][x-1][1];
+					fB1 = (*m_vImage)[y+1][x-1][2];
+
+					fSum1 = fR1 + fG1 + fB1;
+					fRAvg += fR1;
+					fGAvg += fG1;
+					fBAvg += fB1;
+
+					if (fSum1 > (fRatio)) { noise--; }
+					
+					// lower middle
+					fR1 = (*m_vImage)[y+1][x][0];
+					fG1 = (*m_vImage)[y+1][x][1];
+					fB1 = (*m_vImage)[y+1][x][2];
+
+					fSum1 = fR1 + fG1 + fB1;
+					fRAvg += fR1;
+					fGAvg += fG1;
+					fBAvg += fB1;
+
+					if (fSum1 > (fRatio)) { noise--; }
+					
+					// lower right
+					fR1 = (*m_vImage)[y+1][x+1][0];
+					fG1 = (*m_vImage)[y+1][x+1][1];
+					fB1 = (*m_vImage)[y+1][x+1][2];
+
+					fSum1 = fR1 + fG1 + fB1;
+					fRAvg += fR1;
+					fGAvg += fG1;
+					fBAvg += fB1;
+
+					if (fSum1 > (fRatio)) { noise--; }
+
+					if (noise < 0) { continue; } // TODO: should be <=
+
+					fRAvg /= 8;
+					fGAvg /= 8;
+					fBAvg /= 8;
+
+					if (noise == 2)
+					{
+						(*m_vPostProcImage)[y][x][0] = fR*.20 + fRAvg*.80;
+						(*m_vPostProcImage)[y][x][1] = fG*.20 + fGAvg*.80;
+						(*m_vPostProcImage)[y][x][2] = fB*.20 + fBAvg*.80;
+					}
+					else if (noise == 1)
+					{
+						(*m_vPostProcImage)[y][x][0] = fR*.4 + fRAvg*.6;
+						(*m_vPostProcImage)[y][x][1] = fG*.4 + fGAvg*.6;
+						(*m_vPostProcImage)[y][x][2] = fB*.4 + fBAvg*.6;
+					}
+					else if (noise == 0)
+					{
+						(*m_vPostProcImage)[y][x][0] = fR*.7 + fRAvg*.3;
+						(*m_vPostProcImage)[y][x][1] = fG*.7 + fGAvg*.3;
+						(*m_vPostProcImage)[y][x][2] = fB*.7 + fBAvg*.3;
+					}
+				}
+				
+			}
+			pBar5.Finish();
 		}
-		pBar5.Finish();
 
 		
 
