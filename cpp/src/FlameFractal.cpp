@@ -1,7 +1,7 @@
 //*************************************************************
 //  File: FlameFractal.cpp
 //  Date created: 1/28/2017
-//  Date edited: 11/18/2017
+//  Date edited: 11/19/2017
 //  Author: Nathan Martindale
 //  Copyright © 2017 Digital Warrior Labs
 //  Description: 
@@ -614,16 +614,13 @@ namespace dwl
 		}
 		pBar2.Finish();
 
+
 		// THIRD PASS
+		cout << "Third pass... (Prestage noise removal)" << endl;
 		
-		cout << "Third pass... (Post processing/filtering)" << endl;
-
-		//if (m_bDivergent) { cout << "WARNING - Divergent solution, skipping all post proc..." << endl; iFilterMethod = 0; }
-
-		//m_vPostProcImage = m_vImage;
-		for (int y = 0; y < m_vImage->size(); y++)
+		for (int y = 0; y < m_vPostProcImage->size(); y++)
 		{
-			for (int x = 0; x < (*m_vImage)[y].size(); x++)
+			for (int x = 0; x < (*m_vPostProcImage)[y].size(); x++)
 			{
 				(*m_vPostProcImage)[y][x][0] = (*m_vImage)[y][x][0];
 				(*m_vPostProcImage)[y][x][1] = (*m_vImage)[y][x][1];
@@ -632,279 +629,8 @@ namespace dwl
 			}
 		}			
 
-		
-		if (iFilterMethod > 0)
-		{
-			//smooth pdfs
-			for (int x = 0; x < m_vPDFX->size() - 8; x+=8)
-			{
-				float fPoint1 = (*m_vPDFX)[x];
-				float fPoint2 = (*m_vPDFX)[x+8];
-				float fSlope = (fPoint2 - fPoint1) / 8;
-				
-				(*m_vPDFX)[x+1] = fPoint1 + fSlope;
-				(*m_vPDFX)[x+2] = fPoint1 + fSlope*2;
-				(*m_vPDFX)[x+3] = fPoint1 + fSlope*3;
-				(*m_vPDFX)[x+4] = fPoint1 + fSlope*4;
-				(*m_vPDFX)[x+5] = fPoint1 + fSlope*5;
-				(*m_vPDFX)[x+6] = fPoint1 + fSlope*6;
-				(*m_vPDFX)[x+7] = fPoint1 + fSlope*7;
-				(*m_vPDFX)[x+8] = fPoint1 + fSlope*8;
-			}
-			for (int y = 0; y < m_vPDFY->size() - 8; y+=8)
-			{
-				float fPoint1 = (*m_vPDFY)[y];
-				float fPoint2 = (*m_vPDFY)[y+8];
-				float fSlope = (fPoint2 - fPoint1) / 8;
-				
-				(*m_vPDFY)[y+1] = fPoint1 + fSlope;
-				(*m_vPDFY)[y+2] = fPoint1 + fSlope*2;
-				(*m_vPDFY)[y+3] = fPoint1 + fSlope*3;
-				(*m_vPDFY)[y+4] = fPoint1 + fSlope*4;
-				(*m_vPDFY)[y+5] = fPoint1 + fSlope*5;
-				(*m_vPDFY)[y+6] = fPoint1 + fSlope*6;
-				(*m_vPDFY)[y+7] = fPoint1 + fSlope*7;
-				(*m_vPDFY)[y+8] = fPoint1 + fSlope*8;
-			}
-
-			
-			ProgressBar pBar3 = ProgressBar(m_vPostProcImage->size() - 1, m_iProgressBarSize);
-			for (int y = 0; y < m_vPostProcImage->size(); y++)
-			{
-				pBar3.Update(y);
-				//cout << "row " << y << endl;
-				for (int x = 0; x < (*m_vPostProcImage)[y].size(); x++)
-				{
-					float fR = (*m_vImage)[y][x][0];
-					float fG = (*m_vImage)[y][x][1];
-					float fB = (*m_vImage)[y][x][2];
-					float fDensity = (*m_vPoints)[y][x][3];
-
-					float n = fDensity;
-					if (n < 1) { n = 1; }
-
-					
-					float fStdDev = 0.0f;
-					/*if (iFilterMethod == 1) { fStdDev = 5 * (1 / n); }
-					else if (iFilterMethod == 2) { float fStdDev = min(5.0f, fAverageDensity / n); }*/
-					
-					float fYHist = (*m_vPDFY)[y];
-					float fXHist = (*m_vPDFX)[x];
-
-					float fYHistRatio = fYHist / fMaxYHist;
-					float fXHistRatio = fXHist / fMaxXHist;
-
-					//cout << fYHistRatio << " " << fXHistRatio << endl;
-
-					//fStdDev = 5 / (fYHistRatio + fXHistRatio) * 1/(2*n/fAverageDensity); // dis good
-					
-					//fStdDev = 4 / (fYHistRatio + fXHistRatio) * 1/(2*n/fAverageDensity); // dis good (good defaults)
-					fStdDev = (fHistBlurWeight * (4 / (fYHistRatio + fXHistRatio))) * (fDensityBlurWeight * (1/(2*n/fAverageDensity))); // dis good
-
-					//fStdDev = 1 / (fYHist + fXHist) / 500;
-					//fStdDev *= fStdDev;
-					//fStdDev *= fStdDev;
-					
-					//fStdDev = 1.0f;
-					/*if (n < (fAverageDensity / 5)) { fStdDev = 3 * (1/(n/fAverageDensity)); }
-					else if (n < (fAverageDensity / 4)) { fStdDev = 2 * (1/(n/fAverageDensity)); }
-					else if (n < (fAverageDensity / 3)) { fStdDev = 1 * (1/(n/fAverageDensity)); }
-					else if (n < (fAverageDensity / 2)) { fStdDev = .5 * (1/(n/fAverageDensity)); }
-					else { fStdDev = .25 * (1/(n/fAverageDensity)); }*/
-					//fStdDev = (1 / (n/fAverageDensity));
-					//fStdDev *= fStdDev;
-					//fStdDev = max(30*(-(1/(2*(fMaxDensity/4)))*n+1), 0.0f);
-					//fStdDev = max(20*(-(1/(2*(fAverageDensity/4)))*n+1), 0.0f);
-					//else if (n < (fAverageDensity / 2)) { fStdDev = (1/(n/fAverageDensity)); }
-					//else { fStdDev = .2; }
-					//cout << fStdDev << endl;
-					
-					//fStdDev = 5; // DEBUG
-					//int iSize = max(min((int)fStdDev * 3, 30), 1); // has to be at least 1!
-					int iSize = max(min((int)fStdDev * 3, 60), 1); // has to be at least 1!
-
-					
-
-					//cout << fStdDev << endl; // DEBUG
-					if (fStdDev > .1) // comment only for debug
-					{
-						vector<vector<float> >* vMatrix = CalculateConvolutionMatrix(iSize, fStdDev, false);
-						FilterPoint(x, y, vMatrix, false);
-						fR = m_fTempR;
-						fG = m_fTempG;
-						fB = m_fTempB;
-
-						delete vMatrix;
-					}
-
-
-					// 60-.2
-					//fR = max(.033333f * fStdDev - 1, 0);
-					/*cout << fStdDev << endl;
-					fStdDev = min(fStdDev, 30.0f);
-					fR = 255*(min((fStdDev / 15.0f), 1.0f));
-					fG = 255*(min(-(fStdDev / 15.0f) + 2, 1.0f));
-					fB = 0.0f;*/
-					
-					// display histograms
-					//if (x == x)
-					//{
-						//fR = fG = fB = (*m_vPDFY)[y]*25500;
-						//if (x == 0) { cout << fR << endl; }
-					//}
-
-					//cout << fR << " " << fG << endl;
-
-					(*m_vPostProcImage)[y][x][0] = fR;
-					(*m_vPostProcImage)[y][x][1] = fG;
-					(*m_vPostProcImage)[y][x][2] = fB;
-
-					/*if (fB == 0 && (*m_vImage)[y][x][2] != 0)
-					{
-						cout << "actual blue for " << x << "," << y << ": " << (*m_vImage)[y][x][2] << endl;
-						cout << "WARNING - zeroed" << endl;
-						vector<vector<float> >* vMatrix = CalculateConvolutionMatrix(iSize, fStdDev, true);
-						FilterPoint(x, y, vMatrix, true);
-						return;
-					}*/
-				}
-			}
-			pBar3.Finish();
-		}
-		
-
-		// FOURTH PASS
-		cout << "Fourth pass... (second post-proc)" << endl;	
-		
-		if (iFilterMethod > 0)
-		{
-		
-
-		
-			for (int y = 0; y < m_vPostProcImage->size(); y++)
-			{
-				for (int x = 0; x < (*m_vPostProcImage)[y].size(); x++)
-				{
-					(*m_vImage)[y][x][0] = (*m_vPostProcImage)[y][x][0];
-					(*m_vImage)[y][x][1] = (*m_vPostProcImage)[y][x][1];
-					(*m_vImage)[y][x][2] = (*m_vPostProcImage)[y][x][2];
-					(*m_vImage)[y][x][3] = (*m_vPostProcImage)[y][x][3];
-				}
-			}			
-			
-			ProgressBar pBar4 = ProgressBar(m_vPostProcImage->size() - 1, m_iProgressBarSize);
-			for (int y = 0; y < m_vPostProcImage->size(); y++)
-			{
-				pBar4.Update(y);
-				//cout << "row " << y << endl;
-				for (int x = 0; x < (*m_vPostProcImage)[y].size(); x++)
-				{
-					float fR = (*m_vImage)[y][x][0];
-					float fG = (*m_vImage)[y][x][1];
-					float fB = (*m_vImage)[y][x][2];
-					//float fDensity = (*m_vPoints)[y][x][3];
-
-					//float n = fDensity;
-					//if (n < 1) { n = 1; }
-
-					
-					//float fStdDev = 0.2f; // dis good default
-					float fStdDev = fSecondPassBlur;
-
-
-
-					
-					/*if (iFilterMethod == 1) { fStdDev = 5 * (1 / n); }
-					else if (iFilterMethod == 2) { float fStdDev = min(5.0f, fAverageDensity / n); }*/
-					
-					//float fYHist = (*m_vPDFY)[y];
-					//float fXHist = (*m_vPDFX)[x];
-
-					//float fYHistRatio = fYHist / fMaxYHist;
-					//float fXHistRatio = fXHist / fMaxXHist;
-
-					//cout << fYHistRatio << " " << fXHistRatio << endl;
-
-					//fStdDev = 5 / (fYHistRatio + fXHistRatio) * 1/(2*n/fAverageDensity);
-
-					//fStdDev = 1 / (fYHist + fXHist) / 500;
-					//fStdDev *= fStdDev;
-					//fStdDev *= fStdDev;
-					
-					//fStdDev = 1.0f;
-					/*if (n < (fAverageDensity / 5)) { fStdDev = 3 * (1/(n/fAverageDensity)); }
-					else if (n < (fAverageDensity / 4)) { fStdDev = 2 * (1/(n/fAverageDensity)); }
-					else if (n < (fAverageDensity / 3)) { fStdDev = 1 * (1/(n/fAverageDensity)); }
-					else if (n < (fAverageDensity / 2)) { fStdDev = .5 * (1/(n/fAverageDensity)); }
-					else { fStdDev = .25 * (1/(n/fAverageDensity)); }*/
-					//fStdDev = (1 / (n/fAverageDensity));
-					//fStdDev *= fStdDev;
-					//fStdDev = max(30*(-(1/(2*(fMaxDensity/4)))*n+1), 0.0f);
-					//fStdDev = max(20*(-(1/(2*(fAverageDensity/4)))*n+1), 0.0f);
-					//else if (n < (fAverageDensity / 2)) { fStdDev = (1/(n/fAverageDensity)); }
-					//else { fStdDev = .2; }
-					//cout << fStdDev << endl;
-					
-					//fStdDev = 5; // DEBUG
-					//int iSize = max(min((int)fStdDev * 3, 30), 1); // has to be at least 1!
-					int iSize = max(min((int)fStdDev * 3, 60), 1); // has to be at least 1!
-
-					
-
-					//cout << fStdDev << endl; // DEBUG
-					if (fStdDev > .1) // comment only for debug
-					{
-						vector<vector<float> >* vMatrix = CalculateConvolutionMatrix(iSize, fStdDev, false);
-						FilterPoint(x, y, vMatrix, false);
-						fR = m_fTempR;
-						fG = m_fTempG;
-						fB = m_fTempB;
-
-						delete vMatrix;
-					}
-
-
-					// 60-.2
-					//fR = max(.033333f * fStdDev - 1, 0);
-					/*cout << fStdDev << endl;
-					fStdDev = min(fStdDev, 30.0f);
-					fR = 255*(min((fStdDev / 15.0f), 1.0f));
-					fG = 255*(min(-(fStdDev / 15.0f) + 2, 1.0f));
-					fB = 0.0f;*/
-					
-					// display histograms
-					//if (x == x)
-					//{
-						//fR = fG = fB = (*m_vPDFY)[y]*25500;
-						//if (x == 0) { cout << fR << endl; }
-					//}
-
-					//cout << fR << " " << fG << endl;
-
-					(*m_vPostProcImage)[y][x][0] = fR;
-					(*m_vPostProcImage)[y][x][1] = fG;
-					(*m_vPostProcImage)[y][x][2] = fB;
-
-					/*if (fB == 0 && (*m_vImage)[y][x][2] != 0)
-					{
-						cout << "actual blue for " << x << "," << y << ": " << (*m_vImage)[y][x][2] << endl;
-						cout << "WARNING - zeroed" << endl;
-						vector<vector<float> >* vMatrix = CalculateConvolutionMatrix(iSize, fStdDev, true);
-						FilterPoint(x, y, vMatrix, true);
-						return;
-					}*/
-				}
-			}
-			pBar4.Finish();
-		}
-
-
-		
-		// FIFTH PASS
-		cout << "Fifth pass... (Noise removal)" << endl;
-
 		// check for lone speckles
-		for (int i = 0; i < 5; i++)
+		for (int i = 0; i < 1; i++)
 		{
 
 			for (int y = 0; y < m_vPostProcImage->size(); y++)
@@ -918,10 +644,10 @@ namespace dwl
 				}
 			}			
 			
-			ProgressBar pBar5 = ProgressBar(m_vImage->size() - 1, m_iProgressBarSize);
+			ProgressBar pBar3 = ProgressBar(m_vImage->size() - 1, m_iProgressBarSize);
 			for (int y = 1; y < m_vPostProcImage->size() - 1; y++)
 			{
-				pBar5.Update(y);
+				pBar3.Update(y);
 				//cout << "row " << y << endl;
 				for (int x = 1; x < (*m_vPostProcImage)[y].size() - 1; x++)
 				{
@@ -1064,19 +790,471 @@ namespace dwl
 				}
 				
 			}
-			pBar5.Finish();
+			pBar3.Finish();
 		}
 
 		
 
-		// SIXTH PASS
-		cout << "Sixth pass... (final transformations)" << endl;
+		// FOURTH PASS
+		
+		cout << "Fourth pass... (Post processing/filtering)" << endl;
 
-		ProgressBar pBar6 = ProgressBar(m_vImage->size() - 1, m_iProgressBarSize);
+		//if (m_bDivergent) { cout << "WARNING - Divergent solution, skipping all post proc..." << endl; iFilterMethod = 0; }
+
+		//m_vPostProcImage = m_vImage;
+		/*for (int y = 0; y < m_vImage->size(); y++)
+		{
+			for (int x = 0; x < (*m_vImage)[y].size(); x++)
+			{
+				(*m_vPostProcImage)[y][x][0] = (*m_vImage)[y][x][0];
+				(*m_vPostProcImage)[y][x][1] = (*m_vImage)[y][x][1];
+				(*m_vPostProcImage)[y][x][2] = (*m_vImage)[y][x][2];
+				(*m_vPostProcImage)[y][x][3] = (*m_vImage)[y][x][3];
+			}
+		}			*/
+
+		
+		if (iFilterMethod > 0)
+		{
+			//smooth pdfs
+			for (int x = 0; x < m_vPDFX->size() - 8; x+=8)
+			{
+				float fPoint1 = (*m_vPDFX)[x];
+				float fPoint2 = (*m_vPDFX)[x+8];
+				float fSlope = (fPoint2 - fPoint1) / 8;
+				
+				(*m_vPDFX)[x+1] = fPoint1 + fSlope;
+				(*m_vPDFX)[x+2] = fPoint1 + fSlope*2;
+				(*m_vPDFX)[x+3] = fPoint1 + fSlope*3;
+				(*m_vPDFX)[x+4] = fPoint1 + fSlope*4;
+				(*m_vPDFX)[x+5] = fPoint1 + fSlope*5;
+				(*m_vPDFX)[x+6] = fPoint1 + fSlope*6;
+				(*m_vPDFX)[x+7] = fPoint1 + fSlope*7;
+				(*m_vPDFX)[x+8] = fPoint1 + fSlope*8;
+			}
+			for (int y = 0; y < m_vPDFY->size() - 8; y+=8)
+			{
+				float fPoint1 = (*m_vPDFY)[y];
+				float fPoint2 = (*m_vPDFY)[y+8];
+				float fSlope = (fPoint2 - fPoint1) / 8;
+				
+				(*m_vPDFY)[y+1] = fPoint1 + fSlope;
+				(*m_vPDFY)[y+2] = fPoint1 + fSlope*2;
+				(*m_vPDFY)[y+3] = fPoint1 + fSlope*3;
+				(*m_vPDFY)[y+4] = fPoint1 + fSlope*4;
+				(*m_vPDFY)[y+5] = fPoint1 + fSlope*5;
+				(*m_vPDFY)[y+6] = fPoint1 + fSlope*6;
+				(*m_vPDFY)[y+7] = fPoint1 + fSlope*7;
+				(*m_vPDFY)[y+8] = fPoint1 + fSlope*8;
+			}
+
+			
+			ProgressBar pBar4 = ProgressBar(m_vPostProcImage->size() - 1, m_iProgressBarSize);
+			for (int y = 0; y < m_vPostProcImage->size(); y++)
+			{
+				pBar4.Update(y);
+				//cout << "row " << y << endl;
+				for (int x = 0; x < (*m_vPostProcImage)[y].size(); x++)
+				{
+					float fR = (*m_vImage)[y][x][0];
+					float fG = (*m_vImage)[y][x][1];
+					float fB = (*m_vImage)[y][x][2];
+					float fDensity = (*m_vPoints)[y][x][3];
+
+					float n = fDensity;
+					if (n < 1) { n = 1; }
+
+					
+					float fStdDev = 0.0f;
+					/*if (iFilterMethod == 1) { fStdDev = 5 * (1 / n); }
+					else if (iFilterMethod == 2) { float fStdDev = min(5.0f, fAverageDensity / n); }*/
+					
+					float fYHist = (*m_vPDFY)[y];
+					float fXHist = (*m_vPDFX)[x];
+
+					float fYHistRatio = fYHist / fMaxYHist;
+					float fXHistRatio = fXHist / fMaxXHist;
+
+					//cout << fYHistRatio << " " << fXHistRatio << endl;
+
+					//fStdDev = 5 / (fYHistRatio + fXHistRatio) * 1/(2*n/fAverageDensity); // dis good
+					
+					//fStdDev = 4 / (fYHistRatio + fXHistRatio) * 1/(2*n/fAverageDensity); // dis good (good defaults)
+					fStdDev = (fHistBlurWeight * (4 / (fYHistRatio + fXHistRatio))) * (fDensityBlurWeight * (1/(2*n/fAverageDensity))); // dis good
+
+					//fStdDev = 1 / (fYHist + fXHist) / 500;
+					//fStdDev *= fStdDev;
+					//fStdDev *= fStdDev;
+					
+					//fStdDev = 1.0f;
+					/*if (n < (fAverageDensity / 5)) { fStdDev = 3 * (1/(n/fAverageDensity)); }
+					else if (n < (fAverageDensity / 4)) { fStdDev = 2 * (1/(n/fAverageDensity)); }
+					else if (n < (fAverageDensity / 3)) { fStdDev = 1 * (1/(n/fAverageDensity)); }
+					else if (n < (fAverageDensity / 2)) { fStdDev = .5 * (1/(n/fAverageDensity)); }
+					else { fStdDev = .25 * (1/(n/fAverageDensity)); }*/
+					//fStdDev = (1 / (n/fAverageDensity));
+					//fStdDev *= fStdDev;
+					//fStdDev = max(30*(-(1/(2*(fMaxDensity/4)))*n+1), 0.0f);
+					//fStdDev = max(20*(-(1/(2*(fAverageDensity/4)))*n+1), 0.0f);
+					//else if (n < (fAverageDensity / 2)) { fStdDev = (1/(n/fAverageDensity)); }
+					//else { fStdDev = .2; }
+					//cout << fStdDev << endl;
+					
+					//fStdDev = 5; // DEBUG
+					//int iSize = max(min((int)fStdDev * 3, 30), 1); // has to be at least 1!
+					int iSize = max(min((int)fStdDev * 3, 60), 1); // has to be at least 1!
+
+					
+
+					//cout << fStdDev << endl; // DEBUG
+					if (fStdDev > .1) // comment only for debug
+					{
+						vector<vector<float> >* vMatrix = CalculateConvolutionMatrix(iSize, fStdDev, false);
+						FilterPoint(x, y, vMatrix, false);
+						fR = m_fTempR;
+						fG = m_fTempG;
+						fB = m_fTempB;
+
+						delete vMatrix;
+					}
+
+
+					// 60-.2
+					//fR = max(.033333f * fStdDev - 1, 0);
+					/*cout << fStdDev << endl;
+					fStdDev = min(fStdDev, 30.0f);
+					fR = 255*(min((fStdDev / 15.0f), 1.0f));
+					fG = 255*(min(-(fStdDev / 15.0f) + 2, 1.0f));
+					fB = 0.0f;*/
+					
+					// display histograms
+					//if (x == x)
+					//{
+						//fR = fG = fB = (*m_vPDFY)[y]*25500;
+						//if (x == 0) { cout << fR << endl; }
+					//}
+
+					//cout << fR << " " << fG << endl;
+
+					(*m_vPostProcImage)[y][x][0] = fR;
+					(*m_vPostProcImage)[y][x][1] = fG;
+					(*m_vPostProcImage)[y][x][2] = fB;
+
+					/*if (fB == 0 && (*m_vImage)[y][x][2] != 0)
+					{
+						cout << "actual blue for " << x << "," << y << ": " << (*m_vImage)[y][x][2] << endl;
+						cout << "WARNING - zeroed" << endl;
+						vector<vector<float> >* vMatrix = CalculateConvolutionMatrix(iSize, fStdDev, true);
+						FilterPoint(x, y, vMatrix, true);
+						return;
+					}*/
+				}
+			}
+			pBar4.Finish();
+		}
+		
+
+		// FIFTH PASS
+		cout << "Fifth pass... (second post-proc)" << endl;	
+		
+		if (iFilterMethod > 0)
+		{
+			for (int y = 0; y < m_vPostProcImage->size(); y++)
+			{
+				for (int x = 0; x < (*m_vPostProcImage)[y].size(); x++)
+				{
+					(*m_vImage)[y][x][0] = (*m_vPostProcImage)[y][x][0];
+					(*m_vImage)[y][x][1] = (*m_vPostProcImage)[y][x][1];
+					(*m_vImage)[y][x][2] = (*m_vPostProcImage)[y][x][2];
+					(*m_vImage)[y][x][3] = (*m_vPostProcImage)[y][x][3];
+				}
+			}			
+			
+			ProgressBar pBar5 = ProgressBar(m_vPostProcImage->size() - 1, m_iProgressBarSize);
+			for (int y = 0; y < m_vPostProcImage->size(); y++)
+			{
+				pBar5.Update(y);
+				//cout << "row " << y << endl;
+				for (int x = 0; x < (*m_vPostProcImage)[y].size(); x++)
+				{
+					float fR = (*m_vImage)[y][x][0];
+					float fG = (*m_vImage)[y][x][1];
+					float fB = (*m_vImage)[y][x][2];
+					//float fDensity = (*m_vPoints)[y][x][3];
+
+					//float n = fDensity;
+					//if (n < 1) { n = 1; }
+
+					
+					//float fStdDev = 0.2f; // dis good default
+					float fStdDev = fSecondPassBlur;
+
+
+
+					
+					/*if (iFilterMethod == 1) { fStdDev = 5 * (1 / n); }
+					else if (iFilterMethod == 2) { float fStdDev = min(5.0f, fAverageDensity / n); }*/
+					
+					//float fYHist = (*m_vPDFY)[y];
+					//float fXHist = (*m_vPDFX)[x];
+
+					//float fYHistRatio = fYHist / fMaxYHist;
+					//float fXHistRatio = fXHist / fMaxXHist;
+
+					//cout << fYHistRatio << " " << fXHistRatio << endl;
+
+					//fStdDev = 5 / (fYHistRatio + fXHistRatio) * 1/(2*n/fAverageDensity);
+
+					//fStdDev = 1 / (fYHist + fXHist) / 500;
+					//fStdDev *= fStdDev;
+					//fStdDev *= fStdDev;
+					
+					//fStdDev = 1.0f;
+					/*if (n < (fAverageDensity / 5)) { fStdDev = 3 * (1/(n/fAverageDensity)); }
+					else if (n < (fAverageDensity / 4)) { fStdDev = 2 * (1/(n/fAverageDensity)); }
+					else if (n < (fAverageDensity / 3)) { fStdDev = 1 * (1/(n/fAverageDensity)); }
+					else if (n < (fAverageDensity / 2)) { fStdDev = .5 * (1/(n/fAverageDensity)); }
+					else { fStdDev = .25 * (1/(n/fAverageDensity)); }*/
+					//fStdDev = (1 / (n/fAverageDensity));
+					//fStdDev *= fStdDev;
+					//fStdDev = max(30*(-(1/(2*(fMaxDensity/4)))*n+1), 0.0f);
+					//fStdDev = max(20*(-(1/(2*(fAverageDensity/4)))*n+1), 0.0f);
+					//else if (n < (fAverageDensity / 2)) { fStdDev = (1/(n/fAverageDensity)); }
+					//else { fStdDev = .2; }
+					//cout << fStdDev << endl;
+					
+					//fStdDev = 5; // DEBUG
+					//int iSize = max(min((int)fStdDev * 3, 30), 1); // has to be at least 1!
+					int iSize = max(min((int)fStdDev * 3, 60), 1); // has to be at least 1!
+
+					
+
+					//cout << fStdDev << endl; // DEBUG
+					if (fStdDev > .1) // comment only for debug
+					{
+						vector<vector<float> >* vMatrix = CalculateConvolutionMatrix(iSize, fStdDev, false);
+						FilterPoint(x, y, vMatrix, false);
+						fR = m_fTempR;
+						fG = m_fTempG;
+						fB = m_fTempB;
+
+						delete vMatrix;
+					}
+
+
+					// 60-.2
+					//fR = max(.033333f * fStdDev - 1, 0);
+					/*cout << fStdDev << endl;
+					fStdDev = min(fStdDev, 30.0f);
+					fR = 255*(min((fStdDev / 15.0f), 1.0f));
+					fG = 255*(min(-(fStdDev / 15.0f) + 2, 1.0f));
+					fB = 0.0f;*/
+					
+					// display histograms
+					//if (x == x)
+					//{
+						//fR = fG = fB = (*m_vPDFY)[y]*25500;
+						//if (x == 0) { cout << fR << endl; }
+					//}
+
+					//cout << fR << " " << fG << endl;
+
+					(*m_vPostProcImage)[y][x][0] = fR;
+					(*m_vPostProcImage)[y][x][1] = fG;
+					(*m_vPostProcImage)[y][x][2] = fB;
+
+					/*if (fB == 0 && (*m_vImage)[y][x][2] != 0)
+					{
+						cout << "actual blue for " << x << "," << y << ": " << (*m_vImage)[y][x][2] << endl;
+						cout << "WARNING - zeroed" << endl;
+						vector<vector<float> >* vMatrix = CalculateConvolutionMatrix(iSize, fStdDev, true);
+						FilterPoint(x, y, vMatrix, true);
+						return;
+					}*/
+				}
+			}
+			pBar5.Finish();
+		}
+
+
+		
+		// SIXTH PASS
+		cout << "Sixth pass... (Post noise removal)" << endl;
+
+		// check for lone speckles
+		for (int i = 0; i < 0; i++)
+		{
+
+			for (int y = 0; y < m_vPostProcImage->size(); y++)
+			{
+				for (int x = 0; x < (*m_vPostProcImage)[y].size(); x++)
+				{
+					(*m_vImage)[y][x][0] = (*m_vPostProcImage)[y][x][0];
+					(*m_vImage)[y][x][1] = (*m_vPostProcImage)[y][x][1];
+					(*m_vImage)[y][x][2] = (*m_vPostProcImage)[y][x][2];
+					(*m_vImage)[y][x][3] = (*m_vPostProcImage)[y][x][3];
+				}
+			}			
+			
+			ProgressBar pBar6 = ProgressBar(m_vImage->size() - 1, m_iProgressBarSize);
+			for (int y = 1; y < m_vPostProcImage->size() - 1; y++)
+			{
+				pBar6.Update(y);
+				//cout << "row " << y << endl;
+				for (int x = 1; x < (*m_vPostProcImage)[y].size() - 1; x++)
+				{
+					float fR = (*m_vImage)[y][x][0];
+					float fG = (*m_vImage)[y][x][1];
+					float fB = (*m_vImage)[y][x][2];
+					//float fDensity = (*m_vPoints)[y][x][3];
+					//float n = fDensity;
+					//if (n < 1) { n = 1; }
+
+					float fSum = fR + fG + fB;
+					float fRatio = (fSum * 3) / 4;
+					//bool noise = true;
+					int noise = 2;
+
+					float fRAvg = 0.0f;
+					float fBAvg = 0.0f;
+					float fGAvg = 0.0f;
+
+					// upper left
+					float fR1 = (*m_vImage)[y-1][x-1][0];
+					float fG1 = (*m_vImage)[y-1][x-1][1];
+					float fB1 = (*m_vImage)[y-1][x-1][2];
+
+					float fSum1 = fR1 + fG1 + fB1;
+					fRAvg += fR1;
+					fGAvg += fG1;
+					fBAvg += fB1;
+
+					if (fSum1 > (fRatio)) { noise--; }
+					
+					// upper middle
+					fR1 = (*m_vImage)[y-1][x][0];
+					fG1 = (*m_vImage)[y-1][x][1];
+					fB1 = (*m_vImage)[y-1][x][2];
+
+					fSum1 = fR1 + fG1 + fB1;
+					fRAvg += fR1;
+					fGAvg += fG1;
+					fBAvg += fB1;
+
+					if (fSum1 > (fRatio)) { noise--; }
+					
+					// upper right
+					fR1 = (*m_vImage)[y-1][x+1][0];
+					fG1 = (*m_vImage)[y-1][x+1][1];
+					fB1 = (*m_vImage)[y-1][x+1][2];
+
+					fSum1 = fR1 + fG1 + fB1;
+					fRAvg += fR1;
+					fGAvg += fG1;
+					fBAvg += fB1;
+
+					if (fSum1 > (fRatio)) { noise--; }
+					
+					// middle left
+					fR1 = (*m_vImage)[y][x-1][0];
+					fG1 = (*m_vImage)[y][x-1][1];
+					fB1 = (*m_vImage)[y][x-1][2];
+
+					fSum1 = fR1 + fG1 + fB1;
+					fRAvg += fR1;
+					fGAvg += fG1;
+					fBAvg += fB1;
+
+					if (fSum1 > (fRatio)) { noise--; }
+					
+					// middle right
+					fR1 = (*m_vImage)[y][x+1][0];
+					fG1 = (*m_vImage)[y][x+1][1];
+					fB1 = (*m_vImage)[y][x+1][2];
+
+					fSum1 = fR1 + fG1 + fB1;
+					fRAvg += fR1;
+					fGAvg += fG1;
+					fBAvg += fB1;
+
+					if (fSum1 > (fRatio)) { noise--; }
+					
+					// lower left
+					fR1 = (*m_vImage)[y+1][x-1][0];
+					fG1 = (*m_vImage)[y+1][x-1][1];
+					fB1 = (*m_vImage)[y+1][x-1][2];
+
+					fSum1 = fR1 + fG1 + fB1;
+					fRAvg += fR1;
+					fGAvg += fG1;
+					fBAvg += fB1;
+
+					if (fSum1 > (fRatio)) { noise--; }
+					
+					// lower middle
+					fR1 = (*m_vImage)[y+1][x][0];
+					fG1 = (*m_vImage)[y+1][x][1];
+					fB1 = (*m_vImage)[y+1][x][2];
+
+					fSum1 = fR1 + fG1 + fB1;
+					fRAvg += fR1;
+					fGAvg += fG1;
+					fBAvg += fB1;
+
+					if (fSum1 > (fRatio)) { noise--; }
+					
+					// lower right
+					fR1 = (*m_vImage)[y+1][x+1][0];
+					fG1 = (*m_vImage)[y+1][x+1][1];
+					fB1 = (*m_vImage)[y+1][x+1][2];
+
+					fSum1 = fR1 + fG1 + fB1;
+					fRAvg += fR1;
+					fGAvg += fG1;
+					fBAvg += fB1;
+
+					if (fSum1 > (fRatio)) { noise--; }
+
+					if (noise < 0) { continue; } // TODO: should be <=
+
+					fRAvg /= 8;
+					fGAvg /= 8;
+					fBAvg /= 8;
+
+					if (noise == 2)
+					{
+						(*m_vPostProcImage)[y][x][0] = fR*.20 + fRAvg*.80;
+						(*m_vPostProcImage)[y][x][1] = fG*.20 + fGAvg*.80;
+						(*m_vPostProcImage)[y][x][2] = fB*.20 + fBAvg*.80;
+					}
+					else if (noise == 1)
+					{
+						(*m_vPostProcImage)[y][x][0] = fR*.4 + fRAvg*.6;
+						(*m_vPostProcImage)[y][x][1] = fG*.4 + fGAvg*.6;
+						(*m_vPostProcImage)[y][x][2] = fB*.4 + fBAvg*.6;
+					}
+					else if (noise == 0)
+					{
+						(*m_vPostProcImage)[y][x][0] = fR*.7 + fRAvg*.3;
+						(*m_vPostProcImage)[y][x][1] = fG*.7 + fGAvg*.3;
+						(*m_vPostProcImage)[y][x][2] = fB*.7 + fBAvg*.3;
+					}
+				}
+				
+			}
+			pBar6.Finish();
+		}
+
+		
+
+		// SEVENTH PASS
+		cout << "Seventh pass... (final transformations)" << endl;
+
+		ProgressBar pBar7 = ProgressBar(m_vImage->size() - 1, m_iProgressBarSize);
 
 		for (int y = 0; y < m_vImage->size(); y++)
 		{
-			pBar6.Update(y);
+			pBar7.Update(y);
 			for (int x = 0; x < (*m_vImage)[y].size(); x++)
 			{
 				/*(*m_vFinalImage)[y][x][0] = (int)((*m_vImage)[y][x][0]);
@@ -1098,7 +1276,7 @@ namespace dwl
 				}*/
 			}
 		}
-		pBar6.Finish();
+		pBar7.Finish();
 	}
 
 	void FlameFractal::SaveFunctionCode(string sFileName)

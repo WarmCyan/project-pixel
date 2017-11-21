@@ -693,7 +693,11 @@ int HandleCommand(string sCommand)
 
 		string sEcho = "echo Running " + vParts[1] + " render of fractal " + vParts[2] + "... \\n " + vParts[3] + "x" + vParts[4] + " \\n Zoom: " + vParts[7] + " \\n Color: " + vParts[6] + " \\n Quality: " + vParts[5] + " \\n Gamma: " + vParts[8] + " \\n Brightness: " + vParts[9];
 		if (vParts.size() == 10) { sEcho += " \\n (no blur)"; }
-		else { sEcho += " \\n (blur)"; }
+		else 
+		{ 
+			sEcho += " \\n (blur)"; 
+			sEcho += " \\n HistBlur: " + vParts[11] + " \\n DensityBlur: " + vParts[12] + " \\n SecondPassBlur: " + vParts[13];
+		}
 		HandleCommand(sEcho);
 
 		HandleCommand("collection " + vParts[2]);
