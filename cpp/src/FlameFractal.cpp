@@ -309,7 +309,7 @@ namespace dwl
 		ProgressBar pBar = ProgressBar((iIterationCount / 1000), m_iProgressBarSize); // dividing by 1000 so progress bar doesn't freak out with large int
 		for (long int iIteration = 0; iIteration <= iIterationCount; iIteration++)
 		{
-			//cout << "Iteration: " << iIteration << endl; // DEBUG
+			cout << "Iteration: " << iIteration << endl; // DEBUG
 
 			//cout << "\n" << iIteration;  // DEBUG
 			// choose a random function
@@ -329,7 +329,7 @@ namespace dwl
 			fX = m_vFunctions[iSelectedFunction].GetResultX();
 			fY = m_vFunctions[iSelectedFunction].GetResultY();
 			
-			//cout << "Ran function " << fX << " " << fY << endl; // DEBUG
+			cout << "Ran function " << fX << " " << fY << endl; // DEBUG
 
 			//cout << " 2"; // DEBUG
 			//cout << " " << fX << "," << fY; // DEBUG

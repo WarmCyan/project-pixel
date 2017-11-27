@@ -65,6 +65,7 @@ namespace dwl
 			m_fResultX += m_fTempX * m_vVariationWeights[VAR_LINEAR];
 			m_fResultY += m_fTempY * m_vVariationWeights[VAR_LINEAR];
 		}
+		//cout << "\tPast linear " << m_fResultX << "," << m_fResultY << endl; // DEBUG
 		
 		if (m_vVariationWeights[VAR_SINUSOIDAL] > 0)
 		{
@@ -73,6 +74,7 @@ namespace dwl
 			m_fResultX += m_fTempX * m_vVariationWeights[VAR_SINUSOIDAL];
 			m_fResultY += m_fTempY * m_vVariationWeights[VAR_SINUSOIDAL];
 		}
+		//cout << "\tPast sinusoidal " << m_fResultX << "," << m_fResultY << endl; // DEBUG
 		
 		if (m_vVariationWeights[VAR_SPHERICAL] > 0)
 		{
@@ -81,6 +83,7 @@ namespace dwl
 			m_fResultX += m_fTempX * m_vVariationWeights[VAR_SPHERICAL];
 			m_fResultY += m_fTempY * m_vVariationWeights[VAR_SPHERICAL];
 		}
+		//cout << "\tPast spherical " << m_fResultX << "," << m_fResultY << endl; // DEBUG
 
 		if (m_vVariationWeights[VAR_SWIRL] > 0)
 		{
@@ -89,6 +92,7 @@ namespace dwl
 			m_fResultX += m_fTempX * m_vVariationWeights[VAR_SWIRL];
 			m_fResultY += m_fTempY * m_vVariationWeights[VAR_SWIRL];
 		}
+		//cout << "\tPast swirl " << m_fResultX << "," << m_fResultY << endl; // DEBUG
 		
 		if (m_vVariationWeights[VAR_HORSESHOE] > 0)
 		{
@@ -97,6 +101,7 @@ namespace dwl
 			m_fResultX += m_fTempX * m_vVariationWeights[VAR_HORSESHOE];
 			m_fResultY += m_fTempY * m_vVariationWeights[VAR_HORSESHOE];
 		}
+		//cout << "\tPast horseshoe " << m_fResultX << "," << m_fResultY << endl; // DEBUG
 		
 		if (m_vVariationWeights[VAR_POLAR] > 0)
 		{
@@ -105,6 +110,7 @@ namespace dwl
 			m_fResultX += m_fTempX * m_vVariationWeights[VAR_POLAR];
 			m_fResultY += m_fTempY * m_vVariationWeights[VAR_POLAR];
 		}
+		//cout << "\tPast polar " << m_fResultX << "," << m_fResultY << endl; // DEBUG
 		
 		if (m_vVariationWeights[VAR_HANDKERCHIEF] > 0)
 		{
@@ -113,6 +119,7 @@ namespace dwl
 			m_fResultX += m_fTempX * m_vVariationWeights[VAR_HANDKERCHIEF];
 			m_fResultY += m_fTempY * m_vVariationWeights[VAR_HANDKERCHIEF];
 		}
+		//cout << "\tPast hankderchief " << m_fResultX << "," << m_fResultY << endl; // DEBUG
 		
 		if (m_vVariationWeights[VAR_HEART] > 0)
 		{
@@ -121,6 +128,7 @@ namespace dwl
 			m_fResultX += m_fTempX * m_vVariationWeights[VAR_HEART];
 			m_fResultY += m_fTempY * m_vVariationWeights[VAR_HEART];
 		}
+		//cout << "\tPast heart " << m_fResultX << "," << m_fResultY << endl; // DEBUG
 		
 		if (m_vVariationWeights[VAR_DISC] > 0)
 		{
@@ -129,6 +137,7 @@ namespace dwl
 			m_fResultX += m_fTempX * m_vVariationWeights[VAR_DISC];
 			m_fResultY += m_fTempY * m_vVariationWeights[VAR_DISC];
 		}
+		//cout << "\tPast disc " << m_fResultX << "," << m_fResultY << endl; // DEBUG
 		
 		if (m_vVariationWeights[VAR_SPIRAL] > 0)
 		{
@@ -137,27 +146,34 @@ namespace dwl
 			m_fResultX += m_fTempX * m_vVariationWeights[VAR_SPIRAL];
 			m_fResultY += m_fTempY * m_vVariationWeights[VAR_SPIRAL];
 		}
+		//cout << "\tPast spiral " << m_fResultX << "," << m_fResultY << endl; // DEBUG
 		
 		if (m_vVariationWeights[VAR_HYPERBOLIC] > 0)
 		{
 			Var_Hyperbolic(fTerm1, fTerm2);
+			//cout << "Hyperbolic::" << m_fTempX << "," << m_fTempY << endl; // DEBUG
 			m_fResultX += m_fTempX * m_vVariationWeights[VAR_HYPERBOLIC];
 			m_fResultY += m_fTempY * m_vVariationWeights[VAR_HYPERBOLIC];
 		}
+		//cout << "\tPast hyperbolic " << m_fResultX << "," << m_fResultY << endl; // DEBUG
 
 		if (m_vVariationWeights[VAR_DIAMOND] > 0)
 		{
 			Var_Diamond(fTerm1, fTerm2);
+			//cout << "Diamond::" << m_fTempX << "," << m_fTempY << endl; // DEBUG
 			m_fResultX += m_fTempX * m_vVariationWeights[VAR_DIAMOND];
 			m_fResultY += m_fTempY * m_vVariationWeights[VAR_DIAMOND];
 		}
+		//cout << "\tPast diamond " << m_fResultX << "," << m_fResultY << endl; // DEBUG
 
 		if (m_vVariationWeights[VAR_EX] > 0)
 		{
 			Var_Ex(fTerm1, fTerm2);
+			//cout << "Ex::" << m_fTempX << "," << m_fTempY << endl; // DEBUG
 			m_fResultX += m_fTempX * m_vVariationWeights[VAR_EX];
 			m_fResultY += m_fTempY * m_vVariationWeights[VAR_EX];
 		}
+		//cout << "\tPast ex " << m_fResultX << "," << m_fResultY << endl; // DEBUG
 
 		//return { fResultX, fResultY };
 	}
@@ -191,7 +207,8 @@ namespace dwl
 	void FFFunction::Var_Spherical(float fX, float fY) 
 	{
 		float fR = Calc_R(fX, fY);
-		float fCoef = 1 / (pow(fR, 2));
+		float fCoef = 0.0f;
+		if (fR != 0) { fCoef = 1 / (pow(fR, 2)); }
 
 		m_fTempX = fX * fCoef;
 		m_fTempY = fY * fCoef;
@@ -208,7 +225,9 @@ namespace dwl
 	}
 	void FFFunction::Var_Horseshoe(float fX, float fY)
 	{
+		float fR = Calc_R(fX, fY);
 		float fInverseR = 1 / Calc_R(fX, fY);
+		if (fR == 0.0f) { fInverseR = 0.0f; } // NOTE: how to avoid getting nan when 0,0
 		//float fInverseR = 1 / m_fR;
 
 		m_fTempX = fInverseR * (fX - fY) * (fX + fY);
@@ -257,6 +276,7 @@ namespace dwl
 	void FFFunction::Var_Hyperbolic(float fX, float fY)
 	{
 		float fR = Calc_R(fX, fY);
+		if (fR == 0) { fR = 1.0f; } // NOTE: how to avoid inf issues when 0,0
 		float fTheta = Calc_Theta(fX, fY);
 		
 		m_fTempX = (1 / fR) * (cos(fTheta) + sin(fR));
