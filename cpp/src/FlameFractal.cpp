@@ -1381,6 +1381,7 @@ namespace dwl
 	void FlameFractal::LoadImageTrace(string sFileName)
 	{
 		cout << "Loading image trace..." << endl;
+		cout << "(" << sFileName << ")" << endl; // DEBUG
 
 		ifstream pFile;
 		pFile.open((sFileName + "_trace.dat").c_str());
@@ -1437,7 +1438,7 @@ namespace dwl
 			if (iX == m_iWidth) { iX = 0; iY++; pBar.Update(iY); }
 			if (iY == m_iHeight) { break; } // TODO: this really shouldn't be necessary, but it is? Double check logic somewhere here!
 		}
-
+		
 		pBar.Finish();
 
 		m_bInitialized = true;
