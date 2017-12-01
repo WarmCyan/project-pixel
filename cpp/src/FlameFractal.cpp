@@ -337,10 +337,12 @@ namespace dwl
 			// check for divergent solutions
 			if (fY < -10000000000 || fY > 10000000000 || fY < -10000000000 || fY > 10000000000)
 			{
-				pBar.Finish();
+				//pBar.Finish();
 				cout << "WARNING - Solution diverges, skipping further iterations..." << endl;
+				fX = 0.0f;
+				fY = 0.0f;
 				m_bDivergent = true;
-				break;
+				//break;
 			}
 
 			// run final transform
@@ -371,11 +373,12 @@ namespace dwl
 
 			// ignore the first 20 iterations, (to allow convergence below size
 			// of pixel) then plot each point
-			if (iIteration > 20)
+			if (iIteration > 20 && !m_bDivergent)
 			{
 				if (fX_f < 0 || fX_f >= m_iWidth || fY_f < 0 || fY_f >= m_iHeight) { continue; }
 				PlotPoint(fX_f, fY_f, fC_f);
 			}
+			else { m_bDivergent = false; }
 			//cout << " 5"; // DEBUG
 
 			pBar.Update((iIteration / 1000));
