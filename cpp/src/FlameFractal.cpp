@@ -337,7 +337,7 @@ namespace dwl
 			//cout << " " << fX << "," << fY; // DEBUG
 
 			// check for divergent solutions
-			int iDivergentLimit = 10000000000 // NOTE: was previously 10000000000
+			int iDivergentLimit = 10000000000; // NOTE: was previously 10000000000
 			if (fY < -iDivergentLimit || fY > iDivergentLimit || fY < -iDivergentLimit || fY > iDivergentLimit)
 			{
 				//pBar.Finish();
