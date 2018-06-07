@@ -1,9 +1,9 @@
 //*************************************************************
 //  File: FlameFractal.cpp
 //  Date created: 1/28/2017
-//  Date edited: 11/19/2017
+//  Date edited: 06/07/2018
 //  Author: Nathan Martindale
-//  Copyright © 2017 Digital Warrior Labs
+//  Copyright © 2018 Digital Warrior Labs
 //  Description: 
 //*************************************************************
 
@@ -306,6 +306,8 @@ namespace dwl
 		cout << "]" << endl;
 
 		// run the chaos game!
+		int iDivergetHoldSet = 10; // NOTE: set this to change number of steps before it starts plotting again
+		int iDivergentHold = 0;
 		ProgressBar pBar = ProgressBar((iIterationCount / 1000), m_iProgressBarSize); // dividing by 1000 so progress bar doesn't freak out with large int
 		for (long int iIteration = 0; iIteration <= iIterationCount; iIteration++)
 		{
@@ -335,13 +337,15 @@ namespace dwl
 			//cout << " " << fX << "," << fY; // DEBUG
 
 			// check for divergent solutions
-			if (fY < -10000000000 || fY > 10000000000 || fY < -10000000000 || fY > 10000000000)
+			int iDivergentLimit = 10000000000 // NOTE: was previously 10000000000
+			if (fY < -iDivergentLimit || fY > iDivergentLimit || fY < -iDivergentLimit || fY > iDivergentLimit)
 			{
 				//pBar.Finish();
 				cout << "WARNING - Solution diverges, skipping further iterations..." << endl;
 				fX = 0.0f;
 				fY = 0.0f;
 				m_bDivergent = true;
+				iDivergentHold = iDivergetHoldSet;
 				//break;
 			}
 
@@ -373,12 +377,17 @@ namespace dwl
 
 			// ignore the first 20 iterations, (to allow convergence below size
 			// of pixel) then plot each point
-			if (iIteration > 20 && !m_bDivergent)
+			if (iIteration > 20 && (!m_bDivergent || iDivergentHold > 0))
 			{
 				if (fX_f < 0 || fX_f >= m_iWidth || fY_f < 0 || fY_f >= m_iHeight) { continue; }
 				PlotPoint(fX_f, fY_f, fC_f);
 			}
-			else { m_bDivergent = false; }
+			if (iDivergentHold > 0)
+			{
+				iDivergentHold--;
+				//iIteration--; // NOTE: This may not be a good idea...
+			}
+			if (m_bDivergent) { m_bDivergent = false; }
 			//cout << " 5"; // DEBUG
 
 			pBar.Update((iIteration / 1000));
