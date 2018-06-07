@@ -337,8 +337,8 @@ namespace dwl
 			//cout << " " << fX << "," << fY; // DEBUG
 
 			// check for divergent solutions
-			int iDivergentLimit = 10000000000; // NOTE: was previously 10000000000
-			if (fY < -iDivergentLimit || fY > iDivergentLimit || fY < -iDivergentLimit || fY > iDivergentLimit)
+			//int iDivergentLimit = 10000000000; // NOTE: was previously 10000000000
+			if (fY < -10000000000 || fY > 10000000000 || fY < -10000000000 || fY > 10000000000)
 			{
 				//pBar.Finish();
 				cout << "WARNING - Solution diverges, skipping further iterations..." << endl;
