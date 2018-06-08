@@ -377,7 +377,7 @@ namespace dwl
 
 			// ignore the first 20 iterations, (to allow convergence below size
 			// of pixel) then plot each point
-			if (iIteration > 20 && (!m_bDivergent || iDivergentHold > 0))
+			if (iIteration > 20 && (!m_bDivergent || iDivergentHold == 0))
 			{
 				if (fX_f < 0 || fX_f >= m_iWidth || fY_f < 0 || fY_f >= m_iHeight) { continue; }
 				PlotPoint(fX_f, fY_f, fC_f);
