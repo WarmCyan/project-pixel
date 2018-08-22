@@ -1,9 +1,9 @@
 //*************************************************************
 //  File: Generator.cpp
 //  Date created: 1/28/2017
-//  Date edited: 9/14/2017
+//  Date edited: 08/15/2018
 //  Author: Nathan Martindale
-//  Copyright © 2017 Digital Warrior Labs
+//  Copyright © 2018 Digital Warrior Labs
 //  Description: 
 //*************************************************************
 
@@ -445,6 +445,13 @@ int HandleCommand(string sCommand)
 		{
 			pFractal->SetColorRamp({0.0f, 1.0f}, {{1.0f, 1.0f, 1.0f}, {0.25f, 0.75f, 0.7f}});
 			pFractal->SetColorName("teal");
+			bFound = true;
+		}
+		else if (vParts[1] == "neongreen")
+		{
+			//pFractal->SetColorRamp({0.0f, 0.6f, 1.0f}, {{0.01f, 0.01f, 0.01f}, {1.0f, 1.0f, 1.0f}, {0.69f, 1.0f, .07f}});
+			pFractal->SetColorRamp({0.0f, 1.0f}, {{1.0f, 1.0f, 1.0f}, {0.69f, 1.0f, .07f}});
+			pFractal->SetColorName("neongreen");
 			bFound = true;
 		}
 
