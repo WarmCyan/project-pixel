@@ -1,9 +1,9 @@
-TODO: [A] Ability to pass in arguments to scripts
-TODO: [A] Ability to work on multiple images simultaneously
-
 TODO: [B] Multithreading inside single iter of a chaos game?
 TODO: [B] Scripts to help manage official versions (render several high quality res copies)
 TODO: [B] Implement remainder of functions from paper
 
 TODO: Genetic algorithm!
 TODO: Method to edit collection and push functions more towards ends of color ramp (for more vivid colors)
+
+DONE: [A] Ability to pass in arguments to scripts
+DONE: [A] Ability to work on multiple images simultaneously

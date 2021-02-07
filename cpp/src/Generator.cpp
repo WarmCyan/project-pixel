@@ -38,6 +38,8 @@ FlameFractal* pFractal = new FlameFractal(0,0);
 int iCollection = 0;
 string sErrorMsg = "";
 
+int iInstanceID = -1;
+
 bool bRollingMode = false;
 bool bPaused = false;
 
@@ -57,7 +59,19 @@ int main(int argc, char **argv)
 	
 	if (argc > 1)
 	{
-		HandleCommand("run " + string(argv[1]));
+		// get instance ID
+		srand(time(NULL));
+		iInstanceID = rand();
+		cout << "Instance ID: " << iInstanceID << endl;
+		
+		string cmd = "run " + string(argv[1]);
+		
+		// get arguments if any
+		for (int i = 2; i < argc; i++) { cmd += " " + string(argv[i]); }
+		
+		HandleCommand(cmd);
+		cout << "Programmatic access to cached rendered results with following id:" << endl;
+		cout << iInstanceID << endl;
 		return 0;
 	}
 
@@ -299,10 +313,11 @@ int HandleCommand(string sCommand)
 		pFile.open(vParts[1].c_str());
 
 		cout << ">> Running '" << vParts[1] << "'..." << endl;
-		while (!pFile.eof())
+		string sLine;
+		while (getline(pFile, sLine))
 		{
-			string sLine;
-			getline(pFile, sLine);
+			//string sLine;
+			//getline(pFile, sLine);
 
 			// replace any $# with the respective argument (if it exists)
 			for (int i = 2; i < vParts.size(); i++)
@@ -588,8 +603,17 @@ int HandleCommand(string sCommand)
 
 		if (vParts[1] == "image")
 		{
-			pFractal->SaveImageData("imgdata.json");
-			system("python3 ./saveaspng.py");
+			system("mkdir -p render/cache");
+
+			string loc = "imgdata.json";
+			if (iInstanceID != -1) { loc = to_string(iInstanceID) + "_imgdata.json"; }
+			
+			pFractal->SaveImageData("render/cache/" + loc);
+			
+			string saveCMD = "";
+			if (iInstanceID != -1) { saveCMD = "python3 ./saveaspng.py " + to_string(iInstanceID); }
+			else { saveCMD = "python3 ./saveaspng.py"; }
+			system(saveCMD.c_str());
 
 			string sFileName = "";
 			
@@ -646,7 +670,11 @@ int HandleCommand(string sCommand)
 			else { sFileName = vParts[2]; }
 			
 			//string sCopyCommand = "copy \"./render.png\" \"" + sFileName + "\""; // NOTE: only for windows!!
-			string sCopyCommand = "cp \"./render.png\" \"" + sFileName + "\"";
+			string sCopyCommand = "cp \"./render/cache/render.png\" \"" + sFileName + "\"";
+			if (iInstanceID != -1)
+			{
+				sCopyCommand = "cp \"./render/cache/" + to_string(iInstanceID) + "_render.png\" \"" + sFileName + "\"";
+			}
 			
 			cout << ">> Copying to " << sFileName << "..." << endl;
 
