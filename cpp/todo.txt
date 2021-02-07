@@ -6,3 +6,4 @@ TODO: [B] Scripts to help manage official versions (render several high quality 
 TODO: [B] Implement remainder of functions from paper
 
 TODO: Genetic algorithm!
+TODO: Method to edit collection and push functions more towards ends of color ramp (for more vivid colors)
