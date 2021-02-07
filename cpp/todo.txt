@@ -1,0 +1,8 @@
+TODO: [A] Ability to pass in arguments to scripts
+TODO: [A] Ability to work on multiple images simultaneously
+
+TODO: [B] Multithreading inside single iter of a chaos game?
+TODO: [B] Scripts to help manage official versions (render several high quality res copies)
+TODO: [B] Implement remainder of functions from paper
+
+TODO: Genetic algorithm!

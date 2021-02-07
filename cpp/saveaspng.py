@@ -1,6 +1,7 @@
 import json
 import numpy as np
-import scipy.misc
+#import scipy.misc
+import imageio
 
 
 print("Loading image data...")
@@ -22,5 +23,6 @@ for y in range(0, imgdata["height"]):
         imgarray[y][x][3] = imgdata["pixels"][y][x][3]
 
 print("Saving...")
-scipy.misc.imsave("render.png", imgarray)
+#scipy.misc.imsave("render.png", imgarray)
+imageio.imwrite("render.png", imgarray)
 print("Done!")

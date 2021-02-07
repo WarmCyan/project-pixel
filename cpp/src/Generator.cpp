@@ -49,10 +49,17 @@ float fStatHistWeight = 1.0f;
 float fStatDensityWeight = 1.0f;
 float fStatSecondBlur = .2f;
 
-int main()
+int main(int argc, char **argv)
 {
 	LoadCollectionNum();
 	cout << ">> Collection: " << iCollection << endl;
+
+	
+	if (argc > 1)
+	{
+		HandleCommand("run " + string(argv[1]));
+		return 0;
+	}
 
 	REPL();
 	return 0;
