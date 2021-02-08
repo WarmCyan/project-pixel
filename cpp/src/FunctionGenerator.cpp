@@ -55,7 +55,7 @@ namespace dwl
 		
 		while (!bValidFunction)
 		{
-			for (int i = 0; i <= 12; i++)
+			for (int i = 0; i <= 18; i++)
 			{
 				if (RandomFloat() > fDecisionThreshold)
 				{

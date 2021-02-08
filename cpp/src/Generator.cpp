@@ -476,6 +476,13 @@ int HandleCommand(string sCommand)
 			pFractal->SetColorName("neongreen");
 			bFound = true;
 		}
+		else if (vParts[1] == "redblue")
+		{
+			//pFractal->SetColorRamp({0.0f, 0.6f, 1.0f}, {{0.01f, 0.01f, 0.01f}, {1.0f, 1.0f, 1.0f}, {0.69f, 1.0f, .07f}});
+			pFractal->SetColorRamp({0.0f, 1.0f}, {{1.0f, 0.0f, 0.0f}, {0.0f, 0.5f, 1.0f}});
+			pFractal->SetColorName("redblue");
+			bFound = true;
+		}
 
 		if (!bFound)
 		{

@@ -42,6 +42,8 @@ namespace dwl
 			float m_fR;
 			float m_fTheta;
 
+			float m_fOmega;
+
 			vector<float> m_vMatrixCoefficients;
 			vector<float> m_vPostCoefficients;
 			vector<float> m_vVariationWeights;
@@ -66,6 +68,12 @@ namespace dwl
 			void Var_Hyperbolic(float fX, float fY);
 			void Var_Diamond(float fX, float fY);
 			void Var_Ex(float fX, float fY);
+			void Var_Julia(float fX, float fY);
+			void Var_Bent(float fX, float fY);
+			void Var_Waves(float fX, float fY);
+			void Var_Fisheye(float fX, float fY);
+			void Var_Popcorn(float fX, float fY);
+			void Var_Exponential(float fX, float fY);
 			
 		public:
 
@@ -82,6 +90,12 @@ namespace dwl
 			static const int VAR_HYPERBOLIC = 10;
 			static const int VAR_DIAMOND = 11;
 			static const int VAR_EX = 12;
+			static const int VAR_JULIA = 13;
+			static const int VAR_BENT = 14;
+			static const int VAR_WAVES = 15;
+			static const int VAR_FISHEYE = 16;
+			static const int VAR_POPCORN = 17;
+			static const int VAR_EXPONENTIAL = 18;
 			
 			FFFunction();
 			void Run(float fX, float fY);
