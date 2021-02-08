@@ -43,6 +43,7 @@ namespace dwl
 			float m_fTheta;
 
 			vector<float> m_vMatrixCoefficients;
+			vector<float> m_vPostCoefficients;
 			vector<float> m_vVariationWeights;
 			//float* m_vMatrixCoefficients;
 			//float* m_vVariationWeights;
@@ -96,6 +97,7 @@ namespace dwl
 			void SetVariationWeight(int iVariation, float fWeight) { m_vVariationWeights[iVariation] = fWeight; }
 
 			void SetMatrixCoefficients(vector<float> aMatrixCoefficients) { m_vMatrixCoefficients = aMatrixCoefficients; }
+			void SetPostCoefficients(vector<float> aPostCoefficients) { m_vPostCoefficients = aPostCoefficients; }
 
 			float GetWeight() { return m_fWeight; }
 			void SetWeight(float fWeight) { m_fWeight = fWeight; }

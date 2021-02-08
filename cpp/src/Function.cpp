@@ -33,6 +33,7 @@ namespace dwl
 
 		//float aMatrixCoefficients
 		m_vMatrixCoefficients = { 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f }; // linear by default (ax + by + c, dx + ey + f)
+		m_vPostCoefficients = { 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f }; // linear by default (alphax + betay + gamma, deltax + epsilony + zeta) [THIS IS THE POST TRANSFORM]
 		m_vVariationWeights = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
 	}
 
@@ -174,6 +175,12 @@ namespace dwl
 			m_fResultY += m_fTempY * m_vVariationWeights[VAR_EX];
 		}
 		//cout << "\tPast ex " << m_fResultX << "," << m_fResultY << endl; // DEBUG
+		
+		// apply the post transform (section 3.1 in paper)
+		m_fTempX = m_fResultX;	
+		m_fTempY = m_fResultY;	
+		m_fResultX = m_vPostCoefficients[0] * m_fTempX + m_vPostCoefficients[1] * m_fTempY + m_vPostCoefficients[2];
+		m_fResultY = m_vPostCoefficients[3] * m_fTempX + m_vPostCoefficients[4] * m_fTempY;
 
 		//return { fResultX, fResultY };
 	}
@@ -310,6 +317,7 @@ namespace dwl
 	xml_document* FFFunction::GetFunctionXML()
 	{
 		cout << "Getting function xml..." << endl;
+		//cout << "VariationWeights size first: " << m_vVariationWeights.size() << endl;
 			
 		xml_document* pFunctionDoc = new xml_document();
 
@@ -326,14 +334,37 @@ namespace dwl
 		pFunctionNode.append_attribute("E") = m_vMatrixCoefficients[4];
 		pFunctionNode.append_attribute("F") = m_vMatrixCoefficients[5];
 
-		xml_node pVariationsNode = pFunctionNode.append_child("VariationWeights");
+		//cout << "Made it to post coefficients" << endl;
+		/*cout << m_vPostCoefficients[0] << endl;
+		cout << m_vPostCoefficients[1] << endl;
+		cout << m_vPostCoefficients[2] << endl;
+		cout << m_vPostCoefficients[3] << endl;
+		cout << m_vPostCoefficients[4] << endl;
+		cout << m_vPostCoefficients[5] << endl;*/
+		
+		
+		pFunctionNode.append_attribute("alpha") = m_vPostCoefficients[0];
+		pFunctionNode.append_attribute("beta") = m_vPostCoefficients[1];
+		pFunctionNode.append_attribute("gamma") = m_vPostCoefficients[2];
+		pFunctionNode.append_attribute("delta") = m_vPostCoefficients[3];
+		pFunctionNode.append_attribute("epsilon") = m_vPostCoefficients[4];
+		pFunctionNode.append_attribute("zeta") = m_vPostCoefficients[5];
 
+		//cout << "Made it past post" << endl;
+
+		xml_node pVariationsNode = pFunctionNode.append_child("VariationWeights");
+		//cout << "VariationWeights declared" << endl;
+
+		//cout << "VariationWeights size: " << m_vVariationWeights.size() << endl;
 		for (int i = 0; i < m_vVariationWeights.size(); i++)
 		{
+			//cout << i << endl;
 			xml_node pVariationNode = pVariationsNode.append_child("VariationWeight");
 			pVariationNode.append_attribute("Variation") = i;
 			pVariationNode.append_attribute("Value") = m_vVariationWeights[i];
 		}
+
+		//cout << "GeFunctionXML is fine" << endl;
 
 		return pFunctionDoc;
 	}
@@ -355,6 +386,15 @@ namespace dwl
 		m_vMatrixCoefficients[3] = pNode.attribute("D").as_float();
 		m_vMatrixCoefficients[4] = pNode.attribute("E").as_float();
 		m_vMatrixCoefficients[5] = pNode.attribute("F").as_float();
+
+		// load post transform coefficients if they exist
+		xml_attribute attr;
+		if (attr = pNode.attribute("alpha")) { m_vPostCoefficients[0] = attr.as_float(); }
+		if (attr = pNode.attribute("beta")) { m_vPostCoefficients[1] = attr.as_float(); }
+		if (attr = pNode.attribute("gamma")) { m_vPostCoefficients[2] = attr.as_float(); }
+		if (attr = pNode.attribute("delta")) { m_vPostCoefficients[3] = attr.as_float(); }
+		if (attr = pNode.attribute("epsilon")) { m_vPostCoefficients[4] = attr.as_float(); }
+		if (attr = pNode.attribute("zeta")) { m_vPostCoefficients[5] = attr.as_float(); }
 
 		int iIndex = 0;
 		for (xml_node pVariationNode = pNode.child("VariationWeights").child("VariationWeight"); pVariationNode; pVariationNode = pVariationNode.next_sibling("VariationWeight"))

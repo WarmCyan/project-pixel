@@ -1303,6 +1303,8 @@ namespace dwl
 		for (int i = 0; i < m_vFunctions.size(); i++)
 		{
 			FFFunction pFunction = m_vFunctions[i];
+			
+			//cout << "Size in ff for loop: " << pFunction.GetVariationWeights().size() << endl;
 
 			xml_document* pFunctionDoc = pFunction.GetFunctionXML();
 			pFunctions.append_copy(pFunctionDoc->document_element());
