@@ -100,8 +100,26 @@ namespace dwl
 		float fF = 0.0f;
 
 		
+		// post transform stuff (ignore this if you want center symmetry)
+		float fAlpha = 1.0f;
+		float fBeta = 0.0f;
+		float fGamma = 0.0f;
+		float fDelta = 0.0f;
+		float fEpsilon = 1.0f;
+		float fZeta = 0.0f;
+		
+		if (RandomFloat() > .5) { fAlpha = RandomFloat() *		2 - 1; }
+		if (RandomFloat() > .5) { fBeta = RandomFloat() *		2 - 1; }
+		if (RandomFloat() > .5) { fGamma = RandomFloat() *		2 - 1; }
+		if (RandomFloat() > .5) { fDelta = RandomFloat() *		2 - 1; }
+		if (RandomFloat() > .5) { fEpsilon = RandomFloat() *	2 - 1; }
+		if (RandomFloat() > .5) { fZeta = RandomFloat() *		2 - 1; }
+
+		
+		
 		pFunction->SetVariationWeight(FFFunction::VAR_LINEAR, 1.0f);
 		pFunction->SetMatrixCoefficients({fA, fB, fC, fD, fE, fF});
+		pFunction->SetPostCoefficients({fAlpha, fBeta, fGamma, fDelta, fEpsilon, fZeta});
 		
 		pFunction->SetWeight(RandomFloat());
 		pFunction->SetSymmetry(true);

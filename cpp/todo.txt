@@ -1,4 +1,3 @@
-TODO: [A] Should symmetry still have additional post transform apply to it to move away from center?
 TODO: [A] Dihedral symmetry (see paper)
 
 TODO: [B] Multithreading inside single iter of a chaos game?
@@ -6,9 +5,12 @@ TODO: [B] Scripts to help manage official versions (render several high quality 
 
 STRT: [B] Implement remainder of functions from paper
 
+TODO: [B] I think brightness/gamma calc might be wrong? (should be in 0-1, not 0-255 yet)
+
 TODO: Genetic algorithm!
 TODO: Method to edit collection and push functions more towards ends of color ramp (for more vivid colors)
 TODO: Options for function generation, like specifying symmetry
 
 DONE: [A] Ability to pass in arguments to scripts
 DONE: [A] Ability to work on multiple images simultaneously
+DONE: [A] Should symmetry still have additional post transform apply to it to move away from center?
