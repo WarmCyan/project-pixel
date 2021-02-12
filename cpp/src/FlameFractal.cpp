@@ -61,6 +61,7 @@ namespace dwl
 		delete m_vRampPoints;
 		delete m_vPDFX;
 		delete m_vPDFY;
+		delete m_vFilters;
 		//m_vFunctions.clear();
 	}
 
@@ -410,24 +411,35 @@ namespace dwl
 
 	void FlameFractal::ComputeFilters(int iMaxNumFilters, float fMaxRadius, float fMinRadius, float fCurve)
 	{
+		cout << "Computing density filters..." << endl;
 		float fCompMaxRadius = fMaxRadius + 1;
 		float fCompMinRadius = fMinRadius + 1;
 
 		float fFilterD;
 		
-		//int iAxisSize = 2 * ceil(fCompMaxRadius) - 1;
+		int iMaxAxisSize = 2 * ceil(fCompMaxRadius) - 1;
 		
-		m_vFilters = new vector<vector<vector<float > >* >(iMaxNumFilters, 0);
+		//m_vFilters = new vector<vector<vector<float > >* >(iMaxNumFilters, 0);
+		
+		m_vFilters = new vector<vector<vector<float> > >(iMaxNumFilters, vector<vector<float> >(iMaxAxisSize, vector<float>(iMaxAxisSize, 0)));
 			
+		ProgressBar pBar = ProgressBar(iMaxNumFilters - 1, m_iProgressBarSize);
 		for (int i = 0; i < iMaxNumFilters; i++)
 		{
-			//vector<vector<float> >* vFilter = new vector<vector<float > >(
-			float fFilterWidth = fCompMaxRadius / pow(i, fCurve);
+			//cout << i << endl; // DEBUG
+			pBar.Update(i);
+			float fDenom = (float) pow((float)i+1, fCurve);
+			float fFilterWidth = fCompMaxRadius / fDenom;
+
+			//cout << "Denom: " << fDenom << endl;
+			//cout << "FilterWidth: " << fFilterWidth << endl;
 
 			if (fFilterWidth < fCompMinRadius) { fFilterWidth = fCompMinRadius; }
 			
 			int iAxisSize = 2 * ceil(fFilterWidth) - 1;
 			int iRadius = (iAxisSize - 1) / 2;
+			
+			//cout << "AxisSize: " << iAxisSize << endl;
 
 			float fFiltSum=0.0f;
 
@@ -437,8 +449,9 @@ namespace dwl
 				for (int k = -iRadius; k <= iRadius; k++)
 				{
 					fFilterD = sqrt(j*j + k*k) / fFilterWidth;
+					//cout << "filterd: " << fFilterD << endl;
 
-					if (fFilterWidth <= 1.0)
+					if (fFilterD <= 1.0)
 					{
 						// Epanichnikov
 						fFiltSum += 1.0 - (fFilterWidth * fFilterWidth);
@@ -453,13 +466,28 @@ namespace dwl
 				for (int k = -iRadius; k <= iRadius; k++)
 				{
 					fFilterD = sqrt(j*j + k*k) / fFilterWidth;
+					//cout << "filterd: " << fFilterD << endl;
 
-					(*vFilter)[j][k] = (1.0 - (fFilterD * fFilterD))/fFiltSum;
+					if (fFilterD > 1.0)
+					{
+						(*vFilter)[j+iRadius][k+iRadius] = 0.0f;
+					}
+					else
+					{
+						//cout << "filtsum: " << fFiltSum << endl;
+						(*vFilter)[j+iRadius][k+iRadius] = (1.0 - (fFilterD * fFilterD))/fFiltSum;
+						//cout << (*vFilter)[j+iRadius][k+iRadius] << " ";
+					}
 				}
+				//cout << endl;
 			}
+			//cout << endl;
 
-			m_vFilters[i] = vFilter;
+			(*m_vFilters)[i] = *vFilter;
+			//m_vFilters->push_back(*vFilter);
 		}
+		pBar.Finish();
+		cout << "Filters complete!" << endl;
 	}
 
 	void FlameFractal::CalculateKernelScalars(float fStdDev)
@@ -880,7 +908,7 @@ namespace dwl
 		}			*/
 
 		
-		if (iFilterMethod > 0)
+		if (iFilterMethod == 1)
 		{
 			//smooth pdfs
 			for (int x = 0; x < m_vPDFX->size() - 8; x+=8)
@@ -1019,11 +1047,38 @@ namespace dwl
 			pBar4.Finish();
 		}
 		
+		// KERNEL DENSITY ESTIMATION
+		else if (iFilterMethod == 2)
+		{
+			cout << "Running kernel density estimation" << endl;
+			int iMaxDensity = floor(fMaxDensity);
+			ComputeFilters(iMaxDensity+1, 10.0f, 1.0f, 0.5f); // TODO: make these configurable
+
+			cout << "Filtering..." << endl;
+			ProgressBar pBar4_2 = ProgressBar(m_vPostProcImage->size() - 1, m_iProgressBarSize);
+			for (int y = 0; y < m_vPostProcImage->size(); y++)
+			{
+				pBar4_2.Update(y);
+				for (int x = 0; x < (*m_vPostProcImage)[y].size(); x++)
+				{
+					// get the density
+					int iDensity = floor((*m_vPoints)[y][x][3]);
+					//cout << iDensity << endl;
+					FilterPoint(x, y, &((*m_vFilters)[iDensity]), false);
+					
+					(*m_vPostProcImage)[y][x][0] = m_fTempR;
+					(*m_vPostProcImage)[y][x][1] = m_fTempG;
+					(*m_vPostProcImage)[y][x][2] = m_fTempB;
+				}
+			}
+			pBar4_2.Finish();
+		}
+		
 
 		// FIFTH PASS
 		cout << "Fifth pass... (second post-proc)" << endl;	
 		
-		if (iFilterMethod > 0)
+		if (iFilterMethod == 1)
 		{
 			for (int y = 0; y < m_vPostProcImage->size(); y++)
 			{

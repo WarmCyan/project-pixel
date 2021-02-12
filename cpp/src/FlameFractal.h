@@ -91,13 +91,12 @@ namespace dwl
 			vector<vector<vector<float> > >* m_vPostProcImage = NULL;
 			vector<vector<vector<int> > >* m_vFinalImage = NULL;
 			
+			// filters
+			vector<vector<vector<float> > >* m_vFilters = NULL;
+			
 			// pdfs
 			vector<float>* m_vPDFX = NULL;
 			vector<float>* m_vPDFY = NULL;
-
-			// filters
-			vector<vector<vector<float> >* >* m_vFilters = NULL;
-			
 			
 			//vector<FFFunction> m_vFunctions = NULL;
 			vector<FFFunction> m_vFunctions;
