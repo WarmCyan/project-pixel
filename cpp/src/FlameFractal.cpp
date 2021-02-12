@@ -408,6 +408,60 @@ namespace dwl
 		}
 	}
 
+	void FlameFractal::ComputeFilters(int iMaxNumFilters, float fMaxRadius, float fMinRadius, float fCurve)
+	{
+		float fCompMaxRadius = fMaxRadius + 1;
+		float fCompMinRadius = fMinRadius + 1;
+
+		float fFilterD;
+		
+		//int iAxisSize = 2 * ceil(fCompMaxRadius) - 1;
+		
+		m_vFilters = new vector<vector<vector<float > >* >(iMaxNumFilters, 0);
+			
+		for (int i = 0; i < iMaxNumFilters; i++)
+		{
+			//vector<vector<float> >* vFilter = new vector<vector<float > >(
+			float fFilterWidth = fCompMaxRadius / pow(i, fCurve);
+
+			if (fFilterWidth < fCompMinRadius) { fFilterWidth = fCompMinRadius; }
+			
+			int iAxisSize = 2 * ceil(fFilterWidth) - 1;
+			int iRadius = (iAxisSize - 1) / 2;
+
+			float fFiltSum=0.0f;
+
+			// normalize
+			for (int j = -iRadius; j <= iRadius; j++)
+			{
+				for (int k = -iRadius; k <= iRadius; k++)
+				{
+					fFilterD = sqrt(j*j + k*k) / fFilterWidth;
+
+					if (fFilterWidth <= 1.0)
+					{
+						// Epanichnikov
+						fFiltSum += 1.0 - (fFilterWidth * fFilterWidth);
+					}
+				}
+			}
+			
+			// construct kernel
+			vector<vector<float> >* vFilter = new vector<vector<float > >(iAxisSize, vector<float>(iAxisSize, 0));
+			for (int j = -iRadius; j <= iRadius; j++)
+			{
+				for (int k = -iRadius; k <= iRadius; k++)
+				{
+					fFilterD = sqrt(j*j + k*k) / fFilterWidth;
+
+					(*vFilter)[j][k] = (1.0 - (fFilterD * fFilterD))/fFiltSum;
+				}
+			}
+
+			m_vFilters[i] = vFilter;
+		}
+	}
+
 	void FlameFractal::CalculateKernelScalars(float fStdDev)
 	{
 		m_fKernelScalar = 1 / (2 * PI * pow(fStdDev, 2));

@@ -94,6 +94,9 @@ namespace dwl
 			// pdfs
 			vector<float>* m_vPDFX = NULL;
 			vector<float>* m_vPDFY = NULL;
+
+			// filters
+			vector<vector<vector<float> >* >* m_vFilters = NULL;
 			
 			
 			//vector<FFFunction> m_vFunctions = NULL;
@@ -120,6 +123,7 @@ namespace dwl
 
 			float RandomFloat();
 
+			void ComputeFilters(int iMaxNumFilters, float fMaxRadius, float fMinRadius, float fCurve);
 
 			
 		public:

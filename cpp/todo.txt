@@ -1,3 +1,4 @@
+STRT: Implement density estimation filtering
 TODO: [A] Dihedral symmetry (see paper)
 
 TODO: [B] Multithreading inside single iter of a chaos game?
