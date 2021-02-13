@@ -434,12 +434,17 @@ namespace dwl
 			//cout << "Denom: " << fDenom << endl;
 			//cout << "FilterWidth: " << fFilterWidth << endl;
 
-			if (fFilterWidth < fCompMinRadius) { fFilterWidth = fCompMinRadius; }
+			if (fFilterWidth < fCompMinRadius) 
+			{
+				fFilterWidth = fCompMinRadius;
+				m_iMaxFilter = i-1;
+				break;
+			}
 			
 			int iAxisSize = 2 * ceil(fFilterWidth) - 1;
 			int iRadius = (iAxisSize - 1) / 2;
 			
-			//cout << "AxisSize: " << iAxisSize << endl;
+			cout << "AxisSize: " << iAxisSize << endl;
 
 			float fFiltSum=0.0f;
 
@@ -454,7 +459,7 @@ namespace dwl
 					if (fFilterD <= 1.0)
 					{
 						// Epanichnikov
-						fFiltSum += 1.0 - (fFilterWidth * fFilterWidth);
+						fFiltSum += 1.0 - (fFilterD * fFilterD);
 					}
 				}
 			}
@@ -475,6 +480,7 @@ namespace dwl
 					else
 					{
 						//cout << "filtsum: " << fFiltSum << endl;
+						//cout << "sqrd" << fFilterD * fFilterD << endl;
 						(*vFilter)[j+iRadius][k+iRadius] = (1.0 - (fFilterD * fFilterD))/fFiltSum;
 						//cout << (*vFilter)[j+iRadius][k+iRadius] << " ";
 					}
@@ -483,10 +489,14 @@ namespace dwl
 			}
 			//cout << endl;
 
+			//if (i > 20) { return; }
+
 			(*m_vFilters)[i] = *vFilter;
+			//if (i < 20) { PrintMatrix(&((*m_vFilters)[i])); cout << endl; }
 			//m_vFilters->push_back(*vFilter);
 		}
 		pBar.Finish();
+		if (m_iMaxFilter == -1) { m_iMaxFilter = iMaxNumFilters; }
 		cout << "Filters complete!" << endl;
 	}
 
@@ -535,6 +545,19 @@ namespace dwl
 
 		return vMatrix;
 	}
+
+	void FlameFractal::PrintMatrix(vector<vector<float> >* vMatrix)
+	{
+		for (int y = 0; y < vMatrix->size(); y++)
+		{
+			for (int x = 0; x < (*vMatrix)[y].size() ; x++)
+			{
+				cout << (*vMatrix)[y][x];
+			}
+
+			cout << endl;
+		}
+	}
 	
 	void FlameFractal::CalculatePointFactor(int iX, int iY, float fFactor, bool bDebug)
 	{
@@ -550,6 +573,8 @@ namespace dwl
 			m_fTempG = (*m_vImage)[iY][iX][1] * fFactor;
 			m_fTempB = (*m_vImage)[iY][iX][2] * fFactor;
 
+			if (bDebug) { cout << (*m_vImage)[iY][iX][0] << (*m_vImage)[iY][iX][1] << (*m_vImage)[iY][iX][2] << endl; }
+				
 			if (bDebug) { cout << (*m_vPoints)[iY][iX][3] << endl; }
 		}
 	}
@@ -710,7 +735,7 @@ namespace dwl
 
 
 		// THIRD PASS
-		cout << "Third pass... (Prestage noise removal)" << endl;
+		/*cout << "Third pass... (Prestage noise removal)" << endl;
 		
 		for (int y = 0; y < m_vPostProcImage->size(); y++)
 		{
@@ -866,7 +891,7 @@ namespace dwl
 					if (noise == 2)
 					{
 						(*m_vPostProcImage)[y][x][0] = fR*.20 + fRAvg*.80;
-						(*m_vPostProcImage)[y][x][1] = fG*.20 + fGAvg*.80;
+						(MaMaMaMa÷Q*m_vPostProcImage)[y][x][1] = fG*.20 + fGAvg*.80;
 						(*m_vPostProcImage)[y][x][2] = fB*.20 + fBAvg*.80;
 					}
 					else if (noise == 1)
@@ -885,7 +910,7 @@ namespace dwl
 				
 			}
 			pBar3.Finish();
-		}
+		}*/
 
 		
 
@@ -896,7 +921,9 @@ namespace dwl
 		//if (m_bDivergent) { cout << "WARNING - Divergent solution, skipping all post proc..." << endl; iFilterMethod = 0; }
 
 		//m_vPostProcImage = m_vImage;
-		/*for (int y = 0; y < m_vImage->size(); y++)
+		// TODO only uncommenting this because need postprocimage to be filled
+		// before filter?
+		for (int y = 0; y < m_vImage->size(); y++)
 		{
 			for (int x = 0; x < (*m_vImage)[y].size(); x++)
 			{
@@ -905,7 +932,7 @@ namespace dwl
 				(*m_vPostProcImage)[y][x][2] = (*m_vImage)[y][x][2];
 				(*m_vPostProcImage)[y][x][3] = (*m_vImage)[y][x][3];
 			}
-		}			*/
+		}
 
 		
 		if (iFilterMethod == 1)
@@ -1052,7 +1079,9 @@ namespace dwl
 		{
 			cout << "Running kernel density estimation" << endl;
 			int iMaxDensity = floor(fMaxDensity);
-			ComputeFilters(iMaxDensity+1, 10.0f, 1.0f, 0.5f); // TODO: make these configurable
+			ComputeFilters(iMaxDensity+1, 5.0f, 0.1f, 0.50f); // TODO: make these configurable
+
+			cout << "Max Density Filter: " << m_iMaxFilter << endl;
 
 			cout << "Filtering..." << endl;
 			ProgressBar pBar4_2 = ProgressBar(m_vPostProcImage->size() - 1, m_iProgressBarSize);
@@ -1064,11 +1093,24 @@ namespace dwl
 					// get the density
 					int iDensity = floor((*m_vPoints)[y][x][3]);
 					//cout << iDensity << endl;
-					FilterPoint(x, y, &((*m_vFilters)[iDensity]), false);
-					
-					(*m_vPostProcImage)[y][x][0] = m_fTempR;
-					(*m_vPostProcImage)[y][x][1] = m_fTempG;
-					(*m_vPostProcImage)[y][x][2] = m_fTempB;
+					//if (iDensity < 20) {
+						//PrintMatrix(&((*m_vFilters)[iDensity]));
+						//return;
+					//}
+					if (iDensity < m_iMaxFilter)
+					{
+						FilterPoint(x, y, &((*m_vFilters)[iDensity]), false);
+						(*m_vPostProcImage)[y][x][0] = m_fTempR;
+						(*m_vPostProcImage)[y][x][1] = m_fTempG;
+						(*m_vPostProcImage)[y][x][2] = m_fTempB;
+					}
+					else
+					{
+						(*m_vPostProcImage)[y][x][0] = (*m_vImage)[y][x][0];
+						(*m_vPostProcImage)[y][x][1] = (*m_vImage)[y][x][1];
+						(*m_vPostProcImage)[y][x][2] = (*m_vImage)[y][x][2];
+					}
+				
 				}
 			}
 			pBar4_2.Finish();
@@ -1200,7 +1242,7 @@ namespace dwl
 
 		
 		// SIXTH PASS
-		cout << "Sixth pass... (Post noise removal)" << endl;
+		/*cout << "Sixth pass... (Post noise removal)" << endl;
 
 		// check for lone speckles
 		for (int i = 0; i < 0; i++)
@@ -1225,7 +1267,7 @@ namespace dwl
 				for (int x = 1; x < (*m_vPostProcImage)[y].size() - 1; x++)
 				{
 					float fR = (*m_vImage)[y][x][0];
-					float fG = (*m_vImage)[y][x][1];
+					fMaMaMaMaMaþHloat fG = (*m_vImage)[y][x][1];
 					float fB = (*m_vImage)[y][x][2];
 					//float fDensity = (*m_vPoints)[y][x][3];
 					//float n = fDensity;
@@ -1364,7 +1406,7 @@ namespace dwl
 				
 			}
 			pBar6.Finish();
-		}
+		}*/
 
 		
 

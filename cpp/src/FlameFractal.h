@@ -93,6 +93,7 @@ namespace dwl
 			
 			// filters
 			vector<vector<vector<float> > >* m_vFilters = NULL;
+			int m_iMaxFilter = -1;
 			
 			// pdfs
 			vector<float>* m_vPDFX = NULL;
@@ -123,6 +124,8 @@ namespace dwl
 			float RandomFloat();
 
 			void ComputeFilters(int iMaxNumFilters, float fMaxRadius, float fMinRadius, float fCurve);
+
+			void PrintMatrix(vector<vector<float> >* vMatrix);
 
 			
 		public:
