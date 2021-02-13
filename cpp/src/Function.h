@@ -19,6 +19,7 @@
 #include <pugixml.hpp>
 
 #define PI 3.14159265
+#define EPS (1e-8)
 
 using namespace std;
 using namespace pugi;
@@ -74,8 +75,13 @@ namespace dwl
 			void Var_Fisheye(float fX, float fY);
 			void Var_Popcorn(float fX, float fY);
 			void Var_Exponential(float fX, float fY);
+			void Var_Power(float fX, float fY);
+			void Var_Cosine(float fX, float fY);
+			void Var_Rings(float fX, float fY);
 			
 		public:
+
+			static const int NUM_VARIATIONS=21;
 
 			static const int VAR_LINEAR = 0;
 			static const int VAR_SINUSOIDAL = 1;
@@ -96,6 +102,9 @@ namespace dwl
 			static const int VAR_FISHEYE = 16;
 			static const int VAR_POPCORN = 17;
 			static const int VAR_EXPONENTIAL = 18;
+			static const int VAR_POWER = 19;
+			static const int VAR_COSINE = 20;
+			static const int VAR_RINGS = 21;
 			
 			FFFunction();
 			void Run(float fX, float fY);

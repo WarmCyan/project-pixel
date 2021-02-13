@@ -39,7 +39,7 @@ namespace dwl
 		m_vPostCoefficients = { 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f }; // linear by default (alphax + betay + gamma, deltax + epsilony + zeta) [THIS IS THE POST TRANSFORM]
 		//m_vVariationWeights = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
 		m_vVariationWeights = {};
-		for (int i = 0; i <= 18; i++) { m_vVariationWeights.push_back(0.0f); }
+		for (int i = 0; i <= NUM_VARIATIONS; i++) { m_vVariationWeights.push_back(0.0f); }
 	}
 
 	void FFFunction::Run(float fX, float fY)
@@ -238,6 +238,26 @@ namespace dwl
 			m_fResultY += m_fTempY * m_vVariationWeights[VAR_EXPONENTIAL];
 		}
 		//cout << "\tPast exponential " << m_fResultX << "," << m_fResultY << endl; // DEBUG
+		//
+		if (m_vVariationWeights[VAR_POWER] > 0)
+		{
+			Var_Power(fTerm1, fTerm2);
+			m_fResultX += m_fTempX * m_vVariationWeights[VAR_POWER];
+			m_fResultY += m_fTempY * m_vVariationWeights[VAR_POWER];
+		}
+		if (m_vVariationWeights[VAR_COSINE] > 0)
+		{
+			Var_Cosine(fTerm1, fTerm2);
+			m_fResultX += m_fTempX * m_vVariationWeights[VAR_COSINE];
+			m_fResultY += m_fTempY * m_vVariationWeights[VAR_COSINE];
+		}
+		if (m_vVariationWeights[VAR_RINGS] > 0)
+		{
+			Var_Rings(fTerm1, fTerm2);
+			m_fResultX += m_fTempX * m_vVariationWeights[VAR_RINGS];
+			m_fResultY += m_fTempY * m_vVariationWeights[VAR_RINGS];
+		}
+	
 	
 		
 	
@@ -452,6 +472,30 @@ namespace dwl
 		m_fTempX = fCoef * cos(PI * fY);
 		m_fTempY = fCoef * sin(PI * fY);
 	}
+	void FFFunction::Var_Power(float fX, float fY)
+	{
+		float fCoef = pow(m_fR, sin(m_fTheta));
+
+		m_fTempX = fCoef * cos(m_fTheta);
+		m_fTempY = fCoef * sin(m_fTheta);
+	}
+	void FFFunction::Var_Cosine(float fX, float fY)
+	{
+		m_fTempX = cos(PI * fX) * max(min(cosh(fY), 1.5f), 0.001f);
+		m_fTempY = -sin(PI * fX) * max(min(sinh(fY), 1.5f), 0.001f);
+	}
+	void FFFunction::Var_Rings(float fX, float fY)
+	{
+		float fC2 = m_vMatrixCoefficients[2] * m_vMatrixCoefficients[2] + EPS;
+		/*cout << "fc2 " << fC2 << endl;
+		cout << "r " << m_fR << endl;
+		cout << "+ " << m_fR + fC2 << endl;
+		cout << "2 " << 2 * fC2 << endl;*/
+		float fCoef = fmod(m_fR + fC2, 2 * fC2) - fC2 + m_fR * (1 - fC2);
+		m_fTempX = fCoef * cos(m_fTheta);
+		m_fTempY = fCoef * sin(m_fTheta);
+	}
+
 
 
 	string FFFunction::FunctionInfo()

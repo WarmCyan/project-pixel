@@ -125,7 +125,7 @@ int main(int argc, char **argv)
 	//ff.SaveImageTrace("collection/" + to_string(iCollection));
 	
 	// render
-	ff.Render(2.8, 1.2, 0, 0, 0, 0);
+	//ff.Render(2.8, 1.2, 0, 0, 0, 0);
 	ff.SaveImageData("imgdata.json");
 	system("python3 ./saveaspng.py");
 	string sCopyCommand = "copy \"./render.png\" \"./collection/" + to_string(iCollection) + "_render.png\""; // TODO: make cross platform!!
@@ -609,7 +609,7 @@ int HandleCommand(string sCommand)
 		fStatDensityWeight = fDensityBlurWeight;
 		fStatSecondBlur = fSecondPassBlur;
 		
-		pFractal->Render(fGamma, fBrightness, iFilter, fHistBlurWeight, fDensityBlurWeight, fSecondPassBlur);
+		pFractal->Render(fGamma, fBrightness, iFilter, fHistBlurWeight, fDensityBlurWeight, fSecondPassBlur, fMaxFilterRadius, fMinFilterRadius, fCurve);
 		return 0;
 	}
 

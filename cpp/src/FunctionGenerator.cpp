@@ -55,7 +55,7 @@ namespace dwl
 		
 		while (!bValidFunction)
 		{
-			for (int i = 0; i <= 18; i++)
+			for (int i = 0; i <= FFFunction::NUM_VARIATIONS; i++)
 			{
 				if (RandomFloat() > fDecisionThreshold)
 				{
