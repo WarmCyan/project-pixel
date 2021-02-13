@@ -444,7 +444,7 @@ namespace dwl
 			int iAxisSize = 2 * ceil(fFilterWidth) - 1;
 			int iRadius = (iAxisSize - 1) / 2;
 			
-			cout << "AxisSize: " << iAxisSize << endl;
+			//cout << "AxisSize: " << iAxisSize << endl;
 
 			float fFiltSum=0.0f;
 
@@ -609,7 +609,7 @@ namespace dwl
 		m_fTempB = fB;
 	}
 
-	void FlameFractal::Render(float fGamma, float fBrightness, int iFilterMethod, float fHistBlurWeight, float fDensityBlurWeight, float fSecondPassBlur)
+	void FlameFractal::Render(float fGamma, float fBrightness, int iFilterMethod, float fHistBlurWeight, float fDensityBlurWeight, float fSecondPassBlur, float fMaxFilterRadius, float fMinFilterRadius, float fCurve)
 	{
 		cout << "Rendering... (gamma = " << fGamma << ", brightness = " << fBrightness << ")" << endl;
 
@@ -1079,7 +1079,7 @@ namespace dwl
 		{
 			cout << "Running kernel density estimation" << endl;
 			int iMaxDensity = floor(fMaxDensity);
-			ComputeFilters(iMaxDensity+1, 5.0f, 0.1f, 0.50f); // TODO: make these configurable
+			ComputeFilters(iMaxDensity+1, fMaxFilterRadius, fMinFilterRadius, fCurve);
 
 			cout << "Max Density Filter: " << m_iMaxFilter << endl;
 

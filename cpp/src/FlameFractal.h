@@ -163,7 +163,7 @@ namespace dwl
 			void InitializeSolution();
 			//void Solve(int iIterationCount);
 			void Solve(long int iIterationCount);
-			void Render(float fGamma, float fBrightness, int iFilterMethod, float fHistBlurWeight, float fDensityBlurWeight, float fSecondPassBlur);
+			void Render(float fGamma, float fBrightness, int iFilterMethod, float fHistBlurWeight, float fDensityBlurWeight, float fSecondPassBlur, float fMaxFilterRadius, float fMinFilterRadius, float fCurve);
 
 			// TODO: don't forget, store functions as well!
 			void SaveFunctionCode(string sFileName);

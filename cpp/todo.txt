@@ -1,4 +1,3 @@
-STRT: Implement density estimation filtering
 TODO: [A] Dihedral symmetry (see paper)
 
 TODO: [B] Multithreading inside single iter of a chaos game?
@@ -15,3 +14,4 @@ TODO: Options for function generation, like specifying symmetry
 DONE: [A] Ability to pass in arguments to scripts
 DONE: [A] Ability to work on multiple images simultaneously
 DONE: [A] Should symmetry still have additional post transform apply to it to move away from center?
+DONE: Implement density estimation filtering

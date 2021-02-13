@@ -51,6 +51,10 @@ float fStatHistWeight = 1.0f;
 float fStatDensityWeight = 1.0f;
 float fStatSecondBlur = .2f;
 
+float fMaxFilterRadius = 5.0f;
+float fMinFilterRadius = 0.1f;
+float fCurve = 0.5f;
+
 int main(int argc, char **argv)
 {
 	LoadCollectionNum();
@@ -287,7 +291,7 @@ int HandleCommand(string sCommand)
 	else if (vParts[0] == "PAUSE") { bPaused = true; return 3; }
 	else if (vParts[0] == "help")
 	{
-		cout << "exit {rolling}\necho [MESSAGE]\ncollection [INDEX|increment]\nrun [SCRIPT|rolling] {ARGS}\ncreate [WIDTH] [HEIGHT]\nzoom [X] [Y]\ncolor [blue|green|ttu|purple|purpleblue|orange|yellow|red|portal]\ninit\nsolve [COUNT|avg] {AVGDENSITY}\nrender [GAMMA] [BRIGHTNESS] {FILTERNUM} {HISTBLURWEIGHT=1} {DENSITYBLURWEIGHT=1} {SECONDPASSBLUR=.2}\ngenerate\nsave [image|functions|trace|collection] {FILE}\nload [functions|trace] [FILE]\nproduce [experiment|client|official|personal] [COLLECTION|current] [WIDTH] [HEIGHT] [QUALITY] [COLOR] [ZOOM] [GAMMA] [BRIGHTNESS] {FILTERNUM} {HISTBLURWEIGHT} {DENSITYBLURWEIGHT} {SECONDPASSBLUR}" << endl;
+		cout << "exit {rolling}\necho [MESSAGE]\ncollection [INDEX|increment]\nrun [SCRIPT|rolling] {ARGS}\ncreate [WIDTH] [HEIGHT]\nzoom [X] [Y]\ncolor [blue|green|ttu|purple|purpleblue|orange|yellow|red|portal]\ninit\nsolve [COUNT|avg] {AVGDENSITY}\nrender [GAMMA] [BRIGHTNESS] {FILTERNUM} {HISTBLURWEIGHT=1} {DENSITYBLURWEIGHT=1} {SECONDPASSBLUR=.2}\ngenerate\nsave [image|functions|trace|collection] {FILE}\nload [functions|trace] [FILE]\nproduce [experiment|client|official|personal] [COLLECTION|current] [WIDTH] [HEIGHT] [QUALITY] [COLOR] [ZOOM] [GAMMA] [BRIGHTNESS] {FILTERNUM} {HISTBLURWEIGHT|MAXFILTERRADIUS} {DENSITYBLURWEIGHT|MINFILTERRADIUS} {SECONDPASSBLUR|CURVE}" << endl;
 		return 0;
 	}
 	else if (vParts[0] == "run")
@@ -573,7 +577,7 @@ int HandleCommand(string sCommand)
 	{
 		if (vParts.size() < 3 || vParts.size() > 7)
 		{
-			sErrorMsg = "Bad arguments!\nFORMAT: render [GAMMA] [BRIGHTNESS] {FILTERNUM} {HISTBLURWEIGHT=1} {DENSITYBLURWEIGHT=1} {SECONDPASBLUR=.2}";
+			sErrorMsg = "Bad arguments!\nFORMAT: render [GAMMA] [BRIGHTNESS] {FILTERNUM} {HISTBLURWEIGHT=1|MAXFILTERRADIUS=5.0} {DENSITYBLURWEIGHT=1|MINFILTERRADIUS=0.1} {SECONDPASBLUR=.2|CURVE=0.5}";
 			return 1;
 		}
 
@@ -584,9 +588,18 @@ int HandleCommand(string sCommand)
 		float fDensityBlurWeight = 1;
 		float fSecondPassBlur = 0.2f;
 		if (vParts.size() > 3) { iFilter = stoi(vParts[3]); }
-		if (vParts.size() > 4) { fHistBlurWeight = stof(vParts[4]); }
-		if (vParts.size() > 5) { fDensityBlurWeight = stof(vParts[5]); }
-		if (vParts.size() > 6) { fSecondPassBlur = stof(vParts[6]); }
+		if (iFilter == 1)
+		{
+			if (vParts.size() > 4) { fHistBlurWeight = stof(vParts[4]); }
+			if (vParts.size() > 5) { fDensityBlurWeight = stof(vParts[5]); }
+			if (vParts.size() > 6) { fSecondPassBlur = stof(vParts[6]); }
+		}
+		else
+		{
+			if (vParts.size() > 4) { fMaxFilterRadius = stof(vParts[4]); }
+			if (vParts.size() > 5) { fMinFilterRadius = stof(vParts[5]); }
+			if (vParts.size() > 6) { fCurve = stof(vParts[6]); }
+		}
 		cout << ">> Parsed [Gamma: " << fGamma << "] [Brightness: " << fBrightness << "]" << endl;
 
 		fStatGamma = fGamma;
