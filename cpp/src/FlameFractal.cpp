@@ -552,7 +552,7 @@ namespace dwl
 		{
 			for (int x = 0; x < (*vMatrix)[y].size() ; x++)
 			{
-				cout << (*vMatrix)[y][x];
+				cout << (*vMatrix)[y][x] << " ";
 			}
 
 			cout << endl;
@@ -607,6 +607,33 @@ namespace dwl
 		m_fTempR = fR;
 		m_fTempG = fG;
 		m_fTempB = fB;
+	}
+
+	float FlameFractal::FilterDensityPoint(int iX, int iY, vector<vector<float> >* vConvolutionMatrix, bool bDebug)
+	{
+		float fDensity = 0.0f;
+		float fFactor;
+		for (int ly = 0; ly < vConvolutionMatrix->size(); ly++)
+		{
+			int iYOffset = ly - floor(vConvolutionMatrix->size() / 2);
+			if (bDebug) { cout << "on y offset " << iYOffset << endl; }
+			for (int lx = 0; lx < (*vConvolutionMatrix)[ly].size(); lx++)
+			{
+				int iXOffset = lx - floor((*vConvolutionMatrix)[ly].size() / 2);
+				if (bDebug) { cout << "\ton x offset " << iXOffset << endl; }
+				if (bDebug) { cout << "\t\t" << (*vConvolutionMatrix)[ly][lx] << endl; }
+
+				if (iX+iXOffset < m_iWidth && iX+iXOffset >= 0 && iY+iYOffset < m_iHeight && iY+iYOffset >= 0)
+				{
+					fFactor = (*vConvolutionMatrix)[ly][lx] * (*m_vPoints)[iY + iYOffset][iX + iXOffset][3];
+				}
+				else { fFactor = 0.0f; }
+				
+
+				fDensity += fFactor;
+			}
+		}
+		return fDensity;
 	}
 
 	void FlameFractal::Render(float fGamma, float fBrightness, int iFilterMethod, float fHistBlurWeight, float fDensityBlurWeight, float fSecondPassBlur, float fMaxFilterRadius, float fMinFilterRadius, float fCurve)
@@ -1077,6 +1104,31 @@ namespace dwl
 		// KERNEL DENSITY ESTIMATION
 		else if (iFilterMethod == 2)
 		{
+
+			// fixed-width filter
+			cout << "Running fixed width density filtering..." << endl;
+
+			float fStdDev = 1.0f;
+			int iSize = max(min((int)fStdDev * 3, 60), 1) + 1; // has to be at least 1!
+  
+			vector<vector<float> >* vConvolution = CalculateConvolutionMatrix(iSize, fStdDev, false);
+			PrintMatrix(vConvolution);
+			cout << "WHAT" << endl;
+			m_vFilteredDensity = new vector<vector<float > >(m_iHeight, vector<float>(m_iWidth, 0));
+
+			cout << "Filtering..." << endl;
+			ProgressBar pBar4_1 = ProgressBar(m_vPostProcImage->size() - 1, m_iProgressBarSize);
+			for (int y = 0; y < m_vPostProcImage->size(); y++)
+			{
+				pBar4_1.Update(y);
+				for (int x = 0; x < (*m_vPostProcImage)[y].size(); x++)
+				{
+					(*m_vFilteredDensity)[y][x] = FilterDensityPoint(x, y, vConvolution, false);
+				}
+			}
+			pBar4_1.Finish();
+
+			
 			cout << "Running kernel density estimation" << endl;
 			int iMaxDensity = floor(fMaxDensity);
 			ComputeFilters(iMaxDensity+1, fMaxFilterRadius, fMinFilterRadius, fCurve);
@@ -1091,7 +1143,12 @@ namespace dwl
 				for (int x = 0; x < (*m_vPostProcImage)[y].size(); x++)
 				{
 					// get the density
-					int iDensity = floor((*m_vPoints)[y][x][3]);
+					//int iDensity = floor((*m_vPoints)[y][x][3]);
+					int iDensity = floor((*m_vFilteredDensity)[y][x]);
+					
+
+
+					
 					//cout << iDensity << endl;
 					//if (iDensity < 20) {
 						//PrintMatrix(&((*m_vFilters)[iDensity]));

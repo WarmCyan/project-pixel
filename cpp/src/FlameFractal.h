@@ -90,6 +90,8 @@ namespace dwl
 			vector<vector<vector<float> > >* m_vImage = NULL;
 			vector<vector<vector<float> > >* m_vPostProcImage = NULL;
 			vector<vector<vector<int> > >* m_vFinalImage = NULL;
+
+			vector<vector<float> >* m_vFilteredDensity = NULL;
 			
 			// filters
 			vector<vector<vector<float> > >* m_vFilters = NULL;
@@ -120,6 +122,7 @@ namespace dwl
 
 			void CalculatePointFactor(int iX, int iY, float fFactor, bool bDebug);
 			void FilterPoint(int iX, int iY, vector<vector<float> >* vConvolutionMatrix, bool bDebug);
+			float FilterDensityPoint(int iX, int iY, vector<vector<float> >* vConvolutionMatrix, bool bDebug);
 
 			float RandomFloat();
 
