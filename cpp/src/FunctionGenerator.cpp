@@ -158,7 +158,8 @@ namespace dwl
 		}
 
 		// Symmetry?
-		if (RandomFloat() > .3)
+		//if (RandomFloat() > .3)
+		if (RandomFloat() > .1)
 		{
 			int iSymmetryCount = RandomInt(2,8);
 			int iDegree = (int)round(360.0f / (float)iSymmetryCount);

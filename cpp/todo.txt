@@ -1,4 +1,5 @@
 TODO: [A] Dihedral symmetry (see paper)
+TODO: Make fixed width filtering configurable
 
 TODO: [B] Multithreading inside single iter of a chaos game?
 TODO: [B] Scripts to help manage official versions (render several high quality res copies)
